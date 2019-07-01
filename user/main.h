@@ -12,5 +12,6 @@
 #include "stdio.h"
 #include "led.h"
 #include "key.h"
+#include "ec11.h"
 
 #endif

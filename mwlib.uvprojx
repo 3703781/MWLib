@@ -647,6 +647,11 @@
               <FileType>1</FileType>
               <FilePath>.\user\utils.c</FilePath>
             </File>
+            <File>
+              <FileName>ec11.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\ec11.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
