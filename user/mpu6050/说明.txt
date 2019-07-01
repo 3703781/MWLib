@@ -1,0 +1,53 @@
+1. 移植自2015年的官方库motion_driver_6.12，与正点原子和野火之类的的老版本库不兼容，新库改掉了不少bug；
+   由于stm的标准固件库之间不兼容，所以这个移植只能在stm32f4上使用
+
+2. 把这里所有的c文件加入到工程里，只要在main文件里引入mpu6050.h一个头文件就可使用
+
+3. 首先使用MPU6050_InitWithDmp()初始化，初始化时保持Z轴大约与重力平行（也就是模块的正面朝上或反面朝上），这个函数返回0就表示初始化成功了；
+    使用MPU6050_GetDmpData(float *pitch, float *roll, float *yaw)读取dmp姿态融合后的俯仰角、横滚角和航向角，这个函数返回0就表示成功读取
+
+4. 如果需要温度、加速度、陀螺仪等原始数据可以调用以下函数
+	float MPU6050_GetTemperature(void);//返回摄氏温度值
+	uint8_t MPU6050_GetGyroscope(int16_t *gx, int16_t *gy, int16_t *gz);//获取陀螺仪三轴元数据
+	uint8_t MPU6050_GetAccelerometer(int16_t *ax, int16_t *ay, int16_t *az);//获取加速度计三轴元数据
+
+5. 与MPU6050通信底层是软件模拟的I2C总线
+	修改bsp_iic.h里的以下8个宏定义可修改引脚
+	#define IIC_SCL_PORT        GPIOE			//SCL的GPIO
+	#define IIC_SCL_PIN         GPIO_Pin_2			//SCL的PIN
+	#define IIC_SCL_GPIO_CLK    RCC_AHB1Periph_GPIOE	//SCL的GPIO对应的时钟 在初始化时会用到
+	#define IIC_SDA_PORT        GPIOE			//SDA的GPIO
+	#define IIC_SDA_PIN         GPIO_Pin_3			//SDA的PIN
+	#define IIC_SDA_GPIO_CLK    RCC_AHB1Periph_GPIOE	//SDA的GPIO对应的时钟 在初始化时会用到
+	#define IIC_In()            IIC_SDA_PORT->MODER &= ~0x000000C0;IIC_SDA_PORT->MODER |= 0x00000000 	//SDA的IO口变为输入模式
+	#define IIC_Out()         IIC_SDA_PORT->MODER &= ~0x000000C0;IIC_SDA_PORT->MODER |= 0x00000040	//SDA的IO口变为输出模式
+	因为motion_driver_6.12库里定义了程序接口，所以不要修改bsp_iic.h和bsp_iic.c里的函数签名
+
+6. MPU6050没有地磁传感器，所以航向角不准的，俯仰角、横滚角精度0.1°，dmp运行时温度计比室温高3~5度
+
+7. 奉上stm32f4的测试代码，内核运行在168MHz
+    #include "stm32f4xx.h"
+    #include "usart.h"//这个就是正点原子的usart.h
+    #include "delay.h"//这个就是正点原子的delay.h
+    #include "stdio.h"
+    #include "mpu6050.h"
+    int main(void)
+    {
+        uart_init(115200);//串口波特率115200
+        delay_init(168);
+        uint32_t code;
+        while((code = MPU6050_InitWithDmp()))//i2c速度比较低 所以执行完这个初始化要几秒钟
+        {
+            printf("InitWithDmp失败: %d\r\n", code);
+            delay_ms(200);
+        }
+        float pitch, roll, yaw;
+        while(1)
+        {
+            if(!MPU6050_GetDmpData(&pitch, &roll, &yaw))
+            {
+                printf("%.1f, %.1f, %.1f\r\n", pitch, roll, yaw);//发送到串口上
+                delay_ms(500);
+            }
+        }
+    }
