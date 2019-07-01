@@ -7,7 +7,7 @@
 ![License](https://img.shields.io/badge/license-GPLv3-green.svg)
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
 
-MWLib  is written in C/C++ for STM32F4 series. It contains some of the drivers for a variety of devices.
+MWLib is an awesome library for STM32F4 series developed with Keil MDK, based on C/C++ and *STM32F4 Standard Peripheral Libraries*. It provides developers for quick use of electronic modules, featuring easy configuration and simple access. Though the library is yet crude, it is planned to cover a bunch of sensors and common I/O devices.
 
 ## Getting Started
 
@@ -25,7 +25,7 @@ The library covers several devices as listed:
 
 ### Prerequisites
 
-The following are required.
+Software requirements:
 - Windows 7 / 8 / 8.1 / 10
 - Keil MDK uVersion5 or later
 - STM32F4xx_DFP Pack v 2.13 or later
@@ -49,7 +49,7 @@ void fun()
 
 ## Want to contribute?
 
-If you want to help the MWLib project, there are some guidlines:
+If you want to help the MWLib project, here are some guidlines:
 - Respect my coding style.
 - Avoid to commit several features in one commit.
 - Make your modification compact - don't reformat source code in your request.
