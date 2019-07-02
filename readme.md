@@ -22,6 +22,7 @@ The library covers several devices as listed:
 - [OLED](./res/oled.jpg) - I2C 12864 SSD1306 oled module
 - [MPU6050](./res/mpu6050.jpg) - 3 axis accelerometer gyroscope module
 - [MPU9250](./res/mpu9250.jpg) - 9 axis accelerometer gyroscope magnetometer sensor
+- [EC11](./res/ec11.jpg) - 360 degree rotary encoder
 
 ### Prerequisites
 
@@ -80,6 +81,8 @@ Source code in the following files is released under GPLv3 license for non-comme
 ./user/mpu9250/mpu9250.h
 ./user/mpu6050/mpu6050.c
 ./user/mpu6050/mpu6050.h
+./user/ec11.c
+./user/ec11.h
 ```
 ## Acknowledgments
 
