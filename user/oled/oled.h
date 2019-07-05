@@ -32,8 +32,7 @@
 #ifndef __OLED_H
 #define __OLED_H
 
-#include "stm32f4xx.h"
-
+#include "stm32f4xx.h" 
 
 #define OLED_SCL_PORT               GPIOC
 #define OLED_SCL_PIN                GPIO_Pin_10
@@ -41,8 +40,8 @@
 #define OLED_SDA_PORT               GPIOC
 #define OLED_SDA_PIN                GPIO_Pin_11
 #define OLED_SDA_GPIO_CLK           RCC_AHB1Periph_GPIOC
-#define OLED_IIC_In()                   OLED_SDA_PORT->MODER &= ~0x00C00000;OLED_SDA_PORT->MODER |= 0x00000000//输入模式
-#define OLED_IIC_Out()                  OLED_SDA_PORT->MODER &= ~0x00C00000;OLED_SDA_PORT->MODER |= 0x00400000//输出模式
+#define OLED_IIC_In()               OLED_SDA_PORT->MODER &= ~0x00C00000;OLED_SDA_PORT->MODER |= 0x00000000//输入模式
+#define OLED_IIC_Out()              OLED_SDA_PORT->MODER &= ~0x00C00000;OLED_SDA_PORT->MODER |= 0x00400000//输出模式
 
 #define OLED_IIC_ADDRESS            0x78
 #define	OLED_BRIGHTNESS             255
@@ -76,5 +75,5 @@ void OLED_Clear(OLED_HandleTypedef *oledHandle);
 void OLED_Blank(void);
 void OLED_DisplayFormat(OLED_HandleTypedef *oledHandle, const char *format, ...);
 void OLED_DisplayLog(OLED_HandleTypedef *oledHandle, const char *format, ...);
-
+void OLED_DisplayPicture(uint8_t positionX, uint8_t positionY, uint8_t width, uint8_t height, uint8_t picture[]);
 #endif 

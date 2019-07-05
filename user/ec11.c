@@ -34,17 +34,19 @@
  * @{
  */
 
-int32_t __circleCount = 0; //<! Record the number of counter overflows.
+int32_t __circleCount = 0; //!< Record the number of counter overflows.
 #if EC11_USE_CALLBACK == 1
-static EC11_RefreshHandler __refreshHandler = NULL; //<! Callback function.
+static EC11_RefreshHandler __refreshHandler = NULL; //!< Callback function when position change.
+static EC11_KeyHandler __keyHandler = NULL; //!< Callback function when key press.
 #endif
 
 #if EC11_USE_CALLBACK == 1
 /**
  * @brief Initialize EC11 encoders.
- * @param refreshHandler Callback function when the position of encoder changed.
+ * @param refreshHandler Callback function when the position of encoder changes.
+ * @param keyHandler Callback function when the key is pressed.
  */
-void EC11_Init(EC11_RefreshHandler refreshHandler)
+void EC11_Init(EC11_RefreshHandler refreshHandler, EC11_KeyHandler keyHandler)
 #else
 /**
  * @brief Initialize EC11 encoders.
@@ -57,6 +59,9 @@ void EC11_Init()
   TIM_ICInitTypeDef TIM_ICInitStructure;
   GPIO_InitTypeDef GPIO_InitStructure;
   NVIC_InitTypeDef NVIC_InitStructure;
+  #if EC11_USE_CALLBACK == 1
+  EXTI_InitTypeDef EXTI_InitStructure;
+  #endif
   
   //TIM base for encoder.
   RCC_APB1PeriphClockCmd(EC11_TIM_CLK, ENABLE);
@@ -76,7 +81,7 @@ void EC11_Init()
   TIM_ICInitStructure.TIM_Channel = TIM_Channel_1;
   TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
   TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
-  TIM_ICInitStructure.TIM_ICFilter = 0;
+  TIM_ICInitStructure.TIM_ICFilter = 15;
   TIM_ICInit(EC11_TIM, &TIM_ICInitStructure);
   TIM_ICInitStructure.TIM_Channel = TIM_Channel_2;
   TIM_ICInit(EC11_TIM, &TIM_ICInitStructure);
@@ -104,7 +109,38 @@ void EC11_Init()
   GPIO_PinAFConfig(EC11_PHASEB_PORT, EC11_PHASEB_GPIO_PINSOURCE, EC11_GPIO_AF);
   GPIO_Init(EC11_PHASEB_PORT, &GPIO_InitStructure);
   
+  RCC_AHB1PeriphClockCmd(EC11_KEY_GPIO_CLK, ENABLE);
+  GPIO_InitStructure.GPIO_Pin = EC11_KEY_PIN;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+  GPIO_InitStructure.GPIO_Speed = GPIO_High_Speed;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+  GPIO_Init(EC11_KEY_PORT, &GPIO_InitStructure);
+  
+  #if EC11_USE_CALLBACK == 1
+  __keyHandler = keyHandler;
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+  SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOE, EC11_KEY_GPIO_PINSOURCE);
+  EXTI_InitStructure.EXTI_Line = EC11_KEY_EXTI_LINE;
+  EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
+  EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
+  EXTI_InitStructure.EXTI_LineCmd = ENABLE;
+  EXTI_Init(&EXTI_InitStructure);
+  NVIC_InitStructure.NVIC_IRQChannel = EC11_KEY_IRQ_CHANNEL;
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+  NVIC_Init(&NVIC_InitStructure);
+  #endif
+  
   //Turn on the timer.
+  TIM_Cmd(EC11_TIM, ENABLE);
+}
+
+void EC11_ClearPosition()
+{
+  TIM_Cmd(EC11_TIM, DISABLE);
+  TIM_SetCounter(EC11_TIM, 0);
+  __circleCount = 0;
   TIM_Cmd(EC11_TIM, ENABLE);
 }
 
@@ -144,6 +180,23 @@ void EC11_TIM_IRQ_HANDLER()
     #endif
   }
 }
+
+#if EC11_USE_CALLBACK == 1
+/**
+ * @brief Interrupt when the key pressed.
+ */
+void EC11_KEY_IRQ_HANDLER()
+{
+  if((EXTI->PR & EC11_KEY_EXTI_LINE) != (uint32_t)RESET)
+  {
+    EXTI->PR = EC11_KEY_EXTI_LINE;
+    UTILS_DelayMs(10);
+    if ((EC11_KEY_PORT -> IDR & EC11_KEY_PIN) == RESET)
+      __keyHandler();
+  }
+}
+#endif
+
 /**
  * @}
  */

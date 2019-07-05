@@ -46,17 +46,31 @@
  * @defgroup EC11_gpio_define
  * @{
  */
-//GPIO for encoder A
-#define EC11_GPIO_AF               GPIO_AF_TIM3
-#define EC11_PHASEA_PORT           GPIOB
-#define EC11_PHASEA_PIN            GPIO_Pin_4
-#define EC11_PHASEA_GPIO_CLK       RCC_AHB1Periph_GPIOB
-#define EC11_PHASEA_GPIO_PINSOURCE GPIO_PinSource4
-#define EC11_PHASEB_PORT           GPIOB
-#define EC11_PHASEB_PIN            GPIO_Pin_5
-#define EC11_PHASEB_GPIO_CLK       RCC_AHB1Periph_GPIOB
-#define EC11_PHASEB_GPIO_PINSOURCE GPIO_PinSource5
-#define EC11_GPIO_CLK_ALL          (EC11_PHASEA_GPIO_CLK | EC11_PHASEB_GPIO_CLK)
+#define EC11_GPIO_AF                GPIO_AF_TIM3
+#define EC11_PHASEA_PORT            GPIOB
+#define EC11_PHASEA_PIN             GPIO_Pin_4
+#define EC11_PHASEA_GPIO_CLK        RCC_AHB1Periph_GPIOB
+#define EC11_PHASEA_GPIO_PINSOURCE  GPIO_PinSource4
+#define EC11_PHASEB_PORT            GPIOB
+#define EC11_PHASEB_PIN             GPIO_Pin_5
+#define EC11_PHASEB_GPIO_CLK        RCC_AHB1Periph_GPIOB
+#define EC11_PHASEB_GPIO_PINSOURCE  GPIO_PinSource5
+#define EC11_KEY_PORT               GPIOE
+#define EC11_KEY_PIN                GPIO_Pin_3
+#define EC11_KEY_GPIO_CLK           RCC_AHB1Periph_GPIOE
+#define EC11_KEY_GPIO_PINSOURCE     GPIO_PinSource3
+#define EC11_GPIO_CLK_ALL          (EC11_PHASEA_GPIO_CLK | EC11_PHASEB_GPIO_CLK | EC11_KEY_GPIO_CLK)
+/**
+ * @}
+ */
+
+/** 
+ * @defgroup EC11_exti_define
+ * @{
+ */
+#define EC11_KEY_EXTI_LINE          EXTI_Line3
+#define EC11_KEY_IRQ_CHANNEL        EXTI3_IRQn
+#define EC11_KEY_IRQ_HANDLER        EXTI3_IRQHandler
 /**
  * @}
  */
@@ -91,13 +105,16 @@ typedef enum
  */
 typedef void (*EC11_RefreshHandler)(int32_t position, EC11_DirectionTypedef direction); //!> Callback funtion prototype.
 
+typedef void (*EC11_KeyHandler)(void); //!> Callback funtion prototype.
+
 #if EC11_USE_CALLBACK == 1
-void EC11_Init(EC11_RefreshHandler refreshHandler);
+void EC11_Init(EC11_RefreshHandler refreshHandler, EC11_KeyHandler keyHandler);
 #else
 void EC11_Init(void);
 #endif
 int32_t EC11_GetPosition(void);
 
+void EC11_ClearPosition(void);
 /**
  * @}
  */

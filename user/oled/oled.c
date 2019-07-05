@@ -30,7 +30,8 @@
  */
 
 #include "oled.h"
-#include "oled_font.h"       
+#include "oled_font.h"
+#include "oled_bmp.h"
 #include "utils.h"
 #include "stdio.h"
 #include "stdarg.h"
@@ -92,13 +93,14 @@ static inline void OLED_IIC_Init()
  */
 static inline void OLED_IIC_Start()
 {
-    OLED_IIC_Out();//sda线输出
-    OLED_SDA_PORT->BSRRL = OLED_SDA_PIN;//IIC_SDA=1      
-    OLED_SCL_PORT->BSRRL = OLED_SCL_PIN;//IIC_SCL=1
+    __disable_irq();  
+    OLED_IIC_Out(); //sda线输出
+    OLED_SDA_PORT->BSRRL = OLED_SDA_PIN; //IIC_SDA=1      
+    OLED_SCL_PORT->BSRRL = OLED_SCL_PIN; //IIC_SCL=1
     IIC_DelayUs(1);
-    OLED_SDA_PORT->BSRRH = OLED_SDA_PIN;//IIC_SDA=0 START:when CLK is high,DATA change form high to low 
+    OLED_SDA_PORT->BSRRH = OLED_SDA_PIN; //IIC_SDA=0 START:when CLK is high,DATA change form high to low 
     IIC_DelayUs(1);
-    OLED_SCL_PORT->BSRRH = OLED_SCL_PIN;//钳住I2C总线，准备发送或接收数据 
+    OLED_SCL_PORT->BSRRH = OLED_SCL_PIN; //钳住I2C总线，准备发送或接收数据 
 }
 
 /**
@@ -106,13 +108,14 @@ static inline void OLED_IIC_Start()
  */
 static inline void OLED_IIC_Stop()
 {
-    OLED_IIC_Out();//sda线输出
-    OLED_SCL_PORT->BSRRH = OLED_SCL_PIN;//IIC_SCL=0
-    OLED_SDA_PORT->BSRRH = OLED_SDA_PIN;//IIC_SDA=0 STOP:when CLK is high DATA change form low to high
+    OLED_IIC_Out(); //sda线输出
+    OLED_SCL_PORT->BSRRH = OLED_SCL_PIN; //IIC_SCL=0
+    OLED_SDA_PORT->BSRRH = OLED_SDA_PIN; //IIC_SDA=0 STOP:when CLK is high DATA change form low to high
     IIC_DelayUs(1);
-    OLED_SCL_PORT->BSRRL = OLED_SCL_PIN;//IIC_SCL=1
-    OLED_SDA_PORT->BSRRL = OLED_SDA_PIN;//IIC_SDA=1 发送I2C总线结束信号
-    IIC_DelayUs(1);                                   
+    OLED_SCL_PORT->BSRRL = OLED_SCL_PIN; //IIC_SCL=1
+    OLED_SDA_PORT->BSRRL = OLED_SDA_PIN; //IIC_SDA=1 发送I2C总线结束信号
+    IIC_DelayUs(1);
+    __enable_irq();  
 }
 
 /**
@@ -174,22 +177,22 @@ static inline void OLED_IIC_NAck()
  */      
 static inline void OLED_IIC_WriteByte(uint8_t data)
 {                        
-    uint8_t i;   
-    OLED_IIC_Out();         
-    OLED_SCL_PORT->BSRRH = OLED_SCL_PIN;//IIC_SCL=0 拉低时钟开始数据传输
-    for(i = 0; i < 8; i++)
-    {            
-        if((data & 0x80) >> 7)
-            OLED_SDA_PORT->BSRRL = OLED_SDA_PIN;//IIC_SDA=1
-        else
-            OLED_SDA_PORT->BSRRH = OLED_SDA_PIN;//IIC_SDA=0
-        data <<= 1;       
-        IIC_DelayUs(2);   //对TEA5767这三个延时都是必须的
-        OLED_SCL_PORT->BSRRL = OLED_SCL_PIN;//IIC_SCL=1
-        IIC_DelayUs(2); 
-        OLED_SCL_PORT->BSRRH = OLED_SCL_PIN;//IIC_SCL=0
-        IIC_DelayUs(2);
-    }     
+  uint8_t i;
+  OLED_IIC_Out();         
+  OLED_SCL_PORT->BSRRH = OLED_SCL_PIN; //IIC_SCL=0 拉低时钟开始数据传输
+  for (i = 0; i < 8; i++)
+  {            
+    if ((data & 0x80) >> 7)
+      OLED_SDA_PORT->BSRRL = OLED_SDA_PIN; //IIC_SDA=1
+    else
+      OLED_SDA_PORT->BSRRH = OLED_SDA_PIN; //IIC_SDA=0
+      data <<= 1;       
+      IIC_DelayUs(2); //对TEA5767这三个延时都是必须的
+      OLED_SCL_PORT->BSRRL = OLED_SCL_PIN; //IIC_SCL=1
+      IIC_DelayUs(2); 
+      OLED_SCL_PORT->BSRRH = OLED_SCL_PIN; //IIC_SCL=0
+      IIC_DelayUs(2);
+  }
 }
 
 /**
@@ -199,23 +202,23 @@ static inline void OLED_IIC_WriteByte(uint8_t data)
  */ 
 static inline uint8_t OLED_IIC_ReadByte(uint8_t ack)
 {
-    uint8_t i, receive = 0;
-    OLED_IIC_In();//SDA设置为输入
-    for(i = 0; i < 8; i++)
-    {
-        OLED_SCL_PORT->BSRRH = OLED_SCL_PIN;//IIC_SCL=0 
-        IIC_DelayUs(1);
-        OLED_SCL_PORT->BSRRL = OLED_SCL_PIN;//IIC_SCL=1
-        receive <<= 1;
-        if(OLED_SDA_PORT->IDR & OLED_SDA_PIN)
-            receive++;   
-        IIC_DelayUs(1); 
-    }                     
-    if (!ack)
-        OLED_IIC_NAck();//发送nACK
-    else
-        OLED_IIC_Ack(); //发送ACK   
-    return receive;
+  uint8_t i, receive = 0;
+  OLED_IIC_In(); //SDA设置为输入
+  for (i = 0; i < 8; i++)
+  {
+    OLED_SCL_PORT->BSRRH = OLED_SCL_PIN; //IIC_SCL=0 
+    IIC_DelayUs(1);
+    OLED_SCL_PORT->BSRRL = OLED_SCL_PIN; //IIC_SCL=1
+    receive <<= 1;
+    if (OLED_SDA_PORT->IDR & OLED_SDA_PIN)
+      receive++;   
+    IIC_DelayUs(1); 
+  }                     
+  if (!ack)
+    OLED_IIC_NAck(); //发送nACK
+  else
+    OLED_IIC_Ack(); //发送ACK
+  return receive;
 }
 
 /**
@@ -227,23 +230,23 @@ static inline uint8_t OLED_IIC_ReadByte(uint8_t ack)
  */
 uint8_t OLED_IIC_WriteRegByte(uint8_t addr, uint8_t reg, uint8_t data)
 { 
-    OLED_IIC_Start(); 
-	OLED_IIC_WriteByte(addr << 1);//发送器件地址+写命令	
-	if(OLED_IIC_WaitAck())	//等待应答
-	{
-		OLED_IIC_Stop();		 
-		return 1;		
-	}
-    OLED_IIC_WriteByte(reg);	//写寄存器地址
-    OLED_IIC_WaitAck();		//等待应答 
-	OLED_IIC_WriteByte(data);//发送数据
-	if(OLED_IIC_WaitAck())	//等待ACK
-	{
-		OLED_IIC_Stop();	 
-		return 1;		 
-	}		 
-    OLED_IIC_Stop();	 
-	return 0;
+  OLED_IIC_Start(); 
+  OLED_IIC_WriteByte(addr << 1); //发送器件地址+写命令	
+  if (OLED_IIC_WaitAck()) //等待应答
+  {
+    OLED_IIC_Stop();
+    return 1;		
+  }
+    OLED_IIC_WriteByte(reg); //写寄存器地址
+    OLED_IIC_WaitAck(); //等待应答 
+    OLED_IIC_WriteByte(data); //发送数据
+  if (OLED_IIC_WaitAck()) //等待ACK
+  {
+    OLED_IIC_Stop();
+    return 1;
+  }
+  OLED_IIC_Stop();
+  return 0;
 }
 
 /**
@@ -254,18 +257,18 @@ uint8_t OLED_IIC_WriteRegByte(uint8_t addr, uint8_t reg, uint8_t data)
  */
 uint8_t OLED_IIC_ReadRegByte(uint8_t addr, uint8_t reg)
 {
-	uint8_t res;
-    OLED_IIC_Start(); 
-	OLED_IIC_WriteByte(addr << 1);//发送器件地址+写命令	
-	OLED_IIC_WaitAck();//等待应答 
-    OLED_IIC_WriteByte(reg);//写寄存器地址
-    OLED_IIC_WaitAck();//等待应答
-    OLED_IIC_Start();
-	OLED_IIC_WriteByte((addr << 1) | 1);//发送器件地址+读命令	
-    OLED_IIC_WaitAck();//等待应答 
-	res = OLED_IIC_ReadByte(0);//读取数据,发送nACK 
-    OLED_IIC_Stop();//产生一个停止条件 
-	return res;		
+  uint8_t res;
+  OLED_IIC_Start();
+  OLED_IIC_WriteByte(addr << 1); //发送器件地址+写命令
+  OLED_IIC_WaitAck(); //等待应答
+  OLED_IIC_WriteByte(reg); //写寄存器地址
+  OLED_IIC_WaitAck(); //等待应答
+  OLED_IIC_Start();
+  OLED_IIC_WriteByte((addr << 1) | 1); //发送器件地址+读命令
+  OLED_IIC_WaitAck(); //等待应答
+  res = OLED_IIC_ReadByte(0); //读取数据,发送nACK
+  OLED_IIC_Stop(); //产生一个停止条件
+  return res;		
 }
 
 /**
@@ -278,27 +281,27 @@ uint8_t OLED_IIC_ReadRegByte(uint8_t addr, uint8_t reg)
  */
 uint8_t OLED_IIC_WriteRegBytes(uint8_t addr, uint8_t reg, uint8_t len, uint8_t *data)
 {
-    uint8_t i; 
-    OLED_IIC_Start(); 
-    OLED_IIC_WriteByte(addr << 1);//发送器件地址+写命令    
-    if(OLED_IIC_WaitAck())//等待应答
+  uint8_t i;
+  OLED_IIC_Start();
+  OLED_IIC_WriteByte(addr << 1); //发送器件地址+写命令
+  if (OLED_IIC_WaitAck()) //等待应答
+  {
+    OLED_IIC_Stop();
+    return 1;
+  }
+  OLED_IIC_WriteByte(reg); //写寄存器地址
+  OLED_IIC_WaitAck(); //等待应答
+  for (i = 0; i < len; i++)
+  {
+    OLED_IIC_WriteByte(data[i]); //发送数据
+    if (OLED_IIC_WaitAck()) //等待ACK
     {
-        OLED_IIC_Stop();         
-        return 1;        
+      OLED_IIC_Stop();
+      return 1;
     }
-    OLED_IIC_WriteByte(reg);//写寄存器地址
-    OLED_IIC_WaitAck();//等待应答
-    for(i = 0; i < len; i++)
-    {
-        OLED_IIC_WriteByte(data[i]);//发送数据
-        if(OLED_IIC_WaitAck())//等待ACK
-        {
-            OLED_IIC_Stop();     
-            return 1;         
-        }        
-    }    
-    OLED_IIC_Stop();     
-    return 0;    
+  }
+  OLED_IIC_Stop();
+  return 0;    
 }
 
 /**
@@ -310,30 +313,30 @@ uint8_t OLED_IIC_WriteRegBytes(uint8_t addr, uint8_t reg, uint8_t len, uint8_t *
  * @return 0-正常; 1-出错.
  */
 uint8_t OLED_IIC_ReadRegBytes(uint8_t addr, uint8_t reg, uint8_t len, uint8_t *data)
-{ 
-    OLED_IIC_Start(); 
-    OLED_IIC_WriteByte(addr<<1);//发送器件地址+写命令    
-    if(OLED_IIC_WaitAck())//等待应答
-    {
-        OLED_IIC_Stop();         
-        return 1;        
-    }
-    OLED_IIC_WriteByte(reg);//写寄存器地址
-    OLED_IIC_WaitAck();//等待应答
-    OLED_IIC_Start();
-    OLED_IIC_WriteByte((addr << 1) | 1);//发送器件地址+读命令    
-    OLED_IIC_WaitAck();//等待应答 
-    while(len)
-    {
-        if(len == 1)
-            *data=OLED_IIC_ReadByte(0);//读数据,发送nACK 
-        else
-            *data=OLED_IIC_ReadByte(1);//读数据,发送ACK  
-        len--;
-        data++; 
-    }    
-    OLED_IIC_Stop();//产生一个停止条件 
-    return 0;    
+{
+  OLED_IIC_Start();
+  OLED_IIC_WriteByte(addr << 1); //发送器件地址+写命令
+  if (OLED_IIC_WaitAck()) //等待应答
+  {
+    OLED_IIC_Stop();
+    return 1;
+  }
+  OLED_IIC_WriteByte(reg); //写寄存器地址
+  OLED_IIC_WaitAck(); //等待应答
+  OLED_IIC_Start();
+  OLED_IIC_WriteByte((addr << 1) | 1); //发送器件地址+读命令
+  OLED_IIC_WaitAck(); //等待应答
+  while (len)
+  {
+    if (len == 1)
+      *data=OLED_IIC_ReadByte(0); //读数据,发送nACK
+    else
+      *data=OLED_IIC_ReadByte(1); //读数据,发送ACK
+    len--;
+    data++;
+  }
+  OLED_IIC_Stop(); //产生一个停止条件
+  return 0;
 }
 
 /**
@@ -819,29 +822,29 @@ void OLED_DisplayLog(OLED_HandleTypedef *oledHandle, const char *format, ...)
 //    }                    
 //}
 
-///**
-// * @brief 从指定位置显示图片
-// * @param positionX 横坐标(0~127)
-// * @param positionY 页坐标(0~7)
-// * @param width 图片宽度(像素数)
-// * @param width 图片高度(像素数)
-// * @param picture 要显示的图片
-// */
-//void OLED_DisplayPicture(uint8_t positionX, uint8_t positionY, uint8_t width, uint8_t height, uint8_t picture[])
-//{     
-//    uint32_t j = 0;
-//    uint8_t x, y;
-//    height += (positionY >> 3);
-//    uint8_t endY = !(height % 8) ?  (height >> 3) : ((height >> 3) + 1);
-//    uint8_t endX = positionX + width;
-//    for(y = positionY; y <= endY; y++)
-//    {
-//        OLED_SetPosition(positionX, y);
-//        for(x = positionX; x <= endX; x++)
-//        {
-//            OLED_WriteData(picture[j]);
-//            gRam[y][x] = picture[j];
-//            j++;
-//        }
-//    }
-//}
+/**
+ * @brief 从指定位置显示图片
+ * @param positionX 横坐标(0~127)
+ * @param positionY 页坐标(0~7)
+ * @param width 图片宽度(像素数)
+ * @param width 图片高度(像素数)
+ * @param picture 要显示的图片
+ */
+void OLED_DisplayPicture(uint8_t positionX, uint8_t positionY, uint8_t width, uint8_t height, uint8_t picture[])
+{     
+  uint32_t j = 0;
+  uint8_t x, y;
+  height += (positionY >> 3);
+  uint8_t endY = !(height % 8) ?  (height >> 3) : ((height >> 3) + 1) + positionY;
+  uint8_t endX = positionX + width;
+  for(y = positionY; y < endY; y++)
+  {
+    OLED_SetPosition(positionX, y);
+    for(x = positionX; x < endX; x++)
+    {
+      OLED_WriteData(picture[j]);
+      gRam[y][x] = picture[j];
+      j++;
+    }
+  }
+}
