@@ -43,8 +43,9 @@ static uint8_t isInitialized = 0;
  */
 static inline void IIC_DelayUs(uint32_t us)
 {
-    us <<= 2;
-    while(us--);
+    __IO uint32_t tmp = us;
+    tmp <<= 2;
+    while(tmp--);
 }
 /**
  * @brief 初始化IIC
@@ -59,7 +60,7 @@ void IIC_Init()
     GPIO_InitStructure.GPIO_Pin = IIC_SCL_PIN;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;//普通输出模式
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出
-    GPIO_InitStructure.GPIO_Speed = GPIO_Fast_Speed;//50MHz
+    GPIO_InitStructure.GPIO_Speed = GPIO_High_Speed;
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
     GPIO_Init(IIC_SCL_PORT, &GPIO_InitStructure);//初始化
     GPIO_InitStructure.GPIO_Pin = IIC_SDA_PIN;
@@ -109,7 +110,7 @@ uint8_t IIC_WaitAck()
     while(IIC_SDA_PORT->IDR & IIC_SDA_PIN)
     {
         ucErrTime++;
-        if(ucErrTime>250)
+        if(ucErrTime > 250)
         {
             IIC_Stop();
             return 1;
@@ -123,11 +124,15 @@ uint8_t IIC_WaitAck()
  */
 void IIC_Ack()
 {
+    __IO uint32_t j;
     IIC_SCL_PORT->BSRRH = IIC_SCL_PIN;//IIC_SCL=0
     IIC_Out();
     IIC_SDA_PORT->BSRRH = IIC_SDA_PIN;//IIC_SDA=0
-    IIC_DelayUs(1);
+    j = 1;
+    while(j--);
     IIC_SCL_PORT->BSRRL = IIC_SCL_PIN;//IIC_SCL=1
+    j = 1;
+    while(j--);
     IIC_SCL_PORT->BSRRH = IIC_SCL_PIN;//IIC_SCL=0
 }
 /**
@@ -138,30 +143,33 @@ void IIC_NAck()
     IIC_SCL_PORT->BSRRH = IIC_SCL_PIN;//IIC_SCL=0
     IIC_Out();
     IIC_SDA_PORT->BSRRL = IIC_SDA_PIN;//IIC_SDA=1
-    IIC_DelayUs(1);
     IIC_SCL_PORT->BSRRL = IIC_SCL_PIN;//IIC_SCL=1
     IIC_SCL_PORT->BSRRH = IIC_SCL_PIN;//IIC_SCL=0
 }                                          
 /**
  * @brief IIC发送一个字节
- * @return 1-有Ack; 0-无Ack
  */      
 void IIC_WriteByte(uint8_t data)
 {                        
-    uint8_t i;   
+    uint8_t i; 
+    __IO uint32_t j;  
     IIC_Out();         
     IIC_SCL_PORT->BSRRH = IIC_SCL_PIN;//IIC_SCL=0 拉低时钟开始数据传输
     for(i = 0; i < 8; i++)
-    {            
+    {
         if((data & 0x80) >> 7)
             IIC_SDA_PORT->BSRRL = IIC_SDA_PIN;//IIC_SDA=1
         else
             IIC_SDA_PORT->BSRRH = IIC_SDA_PIN;//IIC_SDA=0
         data <<= 1;
+        j = 1;
+        while (j--);
         IIC_SCL_PORT->BSRRL = IIC_SCL_PIN;//IIC_SCL=1
+        j = 1;
+        while (j--);
         IIC_SCL_PORT->BSRRH = IIC_SCL_PIN;//IIC_SCL=0
-    }     
-}         
+    }
+}
 /**
  * @brief 读1字节
  * @param ack
@@ -172,11 +180,14 @@ void IIC_WriteByte(uint8_t data)
 uint8_t IIC_ReadByte(uint8_t ack)
 {
     uint8_t i, receive = 0;
+    __IO uint32_t j;
     IIC_In();//SDA设置为输入
     for(i = 0; i < 8; i++)
     {
-        IIC_SCL_PORT->BSRRH = IIC_SCL_PIN;//IIC_SCL=0
         IIC_DelayUs(1);
+        IIC_SCL_PORT->BSRRH = IIC_SCL_PIN;//IIC_SCL=0
+        j = 10;
+        while(j--);
         IIC_SCL_PORT->BSRRL = IIC_SCL_PIN;//IIC_SCL=1
         receive <<= 1;
         if(IIC_SDA_PORT->IDR & IIC_SDA_PIN)

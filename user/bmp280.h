@@ -64,7 +64,7 @@
  
 //Custom configuration.
 #if defined(BMP280_APPLICATION_CUSTOM)
-#define BMP280_MODE                       BMP280_NORMAL_MODE //!> Power mode, see @ref BMP280_Mode .
+#define BMP280_MODE                       BMP280_FORCED_MODE //!> Power mode, see @ref BMP280_Mode .
 #define BMP280_PRESSURE_OVER_SAMPLING     BMP280_OS_16X //!> Pressure accuracy, see @ref BMP280_OverSampling .
 #define BMP280_TEMPERATURE_OVER_SAMPLING  BMP280_OS_16X //!> Temperature accuracy, see @ref BMP280_OverSampling .
 #define BMP280IIR_FILTER                  BMP280_FILTER_OFF //!> IIR filter option, see @ref BMP280_IirFilter .

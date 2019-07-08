@@ -19,7 +19,7 @@
  *              encoder_1       STM32F407       encoder_2
  *          
  *          The source code repository is available on GitHub:
- *              https://github.com/3703781/mystm32f4-devices-lib
+ *              https://github.com/3703781
  *          Your pull requests will be welcome.
  *          Here are the guidelines for your pull requests:
  *              1. Respect my coding style.

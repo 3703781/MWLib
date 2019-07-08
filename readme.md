@@ -12,7 +12,7 @@ MWLib is an awesome library for STM32F4 series developed with Keil MDK, based on
 ## Getting Started
 
 ### Overview
-This library is based on *STM32F4 Standard Peripheral Libraries* , thus it follows the code style. The file *[mwlib.uvprojx](./mwlib.uvprojx)* is MDK project file. Source code under the folder *[user](.user/)* is in paired form of *xxx.h* and *xxx.c*, where *xxx* refers to model name of the device. There are code from *STM32F4 Standard Peripheral Libraries*  under the folder *[fwlib](./fwlib)* and some tool functions in *[utils.c](./user/utils.c)*.
+This library is based on *STM32F4 Standard Peripheral Libraries* , thus it follows its code style. The file *[mwlib.uvprojx](./mwlib.uvprojx)* is MDK project file. Source code under the folder *[user](.user/)* is in paired form of *xxx.h* and *xxx.c*, where *xxx* refers to model name of the device. There are code from *STM32F4 Standard Peripheral Libraries*  under the folder *[fwlib](./fwlib)* and some tool functions in *[utils.c](./user/utils.c)*.
 The library covers several devices as listed:
 - [DRV8825](./res/drv8826.jpg) - Stepper motor driver carrier
 - [E18-D80NK](./res/e18d80nk.jpg) - Infrared photoelectric sensor
@@ -20,9 +20,10 @@ The library covers several devices as listed:
 - [TB6612FNG](./res/tb6612fng.png) - Motor drive module
 - [GP2Y0E03](./res/gp2y0e03.png) - Distance sensor module
 - [OLED](./res/oled.jpg) - I2C 12864 SSD1306 oled module
-- [MPU6050](./res/mpu6050.jpg) - 3 axis accelerometer gyroscope module
+- [MPU6050](./res/mpu6050.jpg) - 3 axis accelerometer gyroscope sensor
 - [MPU9250](./res/mpu9250.jpg) - 9 axis accelerometer gyroscope magnetometer sensor
 - [EC11](./res/ec11.jpg) - 360 degree rotary encoder
+- [BMP280](./res/bmp280.png) - Absolute barometric pressure and temperature sensor
 
 ### Prerequisites
 
@@ -57,7 +58,7 @@ If you want to help the MWLib project, here are some guidlines:
 
 ## License
 
-Source code in the following files is released under GPLv3 license for non-commercial projects only. See *[license](./LICENSE)* for details.
+Source code in the following files is released under GPLv3 license for non-commercial projects only. Contact me for commercial use. See *[license](./LICENSE)* for details.
 ```
 ./user/drv8825.c
 ./user/drv8825.h
@@ -83,6 +84,8 @@ Source code in the following files is released under GPLv3 license for non-comme
 ./user/mpu6050/mpu6050.h
 ./user/ec11.c
 ./user/ec11.h
+./user/bmp280.c
+./user/bmp280.h
 ```
 ## Acknowledgments
 
