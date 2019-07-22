@@ -1,7 +1,7 @@
 /**
  * @file    utils.c
  * @author  Alientek, Miaow
- * @version 0.1.0
+ * @version 0.2.0
  * @date    2019/06/29
  * @brief   
  *          This file provides utilities:
@@ -9,7 +9,7 @@
  *              2. Serialport on UART1. Functions from stdio.h are avaliable.
  * @note
  *          Minimum version of header file:
- *              0.1.0
+ *              0.2.0
  *
  *          Pin connection of serial port:
  *            ©°©¤©¤©¤©¤©¤©´
@@ -34,13 +34,17 @@
  * @{
  */
 
+uint32_t AhbClock = 0;
+uint32_t Apb1Clock = 0;
+uint32_t Apb2Clock = 0;
+
 static uint8_t fac_us = 0;
 static uint16_t fac_ms = 0;
 #pragma import(__use_no_semihosting)             
 
-struct __FILE 
-{ 
-  int handle; 
+struct __FILE
+{
+  int handle;
 } __stdout;
 
 #if UTILS_USART_RX_ENABLE
@@ -89,11 +93,98 @@ void USART1_IRQHandler(void)
 } 
 #endif
 
+void UTILS_UpdateClocks()
+{
+  uint32_t ahbClockTmp = (RCC->CFGR & ((uint32_t)15 << 4));
+  uint32_t apb1ClockTmp = (RCC->CFGR & ((uint32_t)7 << 10));
+  uint32_t apb2ClockTmp = (RCC->CFGR & ((uint32_t)7 << 13));
+  SystemCoreClockUpdate();
+  
+  switch (ahbClockTmp)
+  {
+    case RCC_CFGR_HPRE_DIV1:
+      AhbClock = SystemCoreClock;
+      break;
+    case RCC_CFGR_HPRE_DIV2:
+      AhbClock = SystemCoreClock >> 1;
+      break;
+    case RCC_CFGR_HPRE_DIV4:
+      AhbClock = SystemCoreClock >> 2;
+      break;
+    case RCC_CFGR_HPRE_DIV8:
+      AhbClock = SystemCoreClock >> 3;
+      break;
+    case RCC_CFGR_HPRE_DIV16:
+      AhbClock = SystemCoreClock >> 4;
+      break;
+    case RCC_CFGR_HPRE_DIV64:
+      AhbClock = SystemCoreClock >> 6;
+      break;
+    case RCC_CFGR_HPRE_DIV128:
+      AhbClock = SystemCoreClock >> 7;
+      break;
+    case RCC_CFGR_HPRE_DIV256:
+      AhbClock = SystemCoreClock >> 8;
+      break;
+    case RCC_CFGR_HPRE_DIV512:
+      AhbClock = SystemCoreClock >> 9;
+      break;
+    default:
+      AhbClock = 0;
+      break;
+  }
+  
+  switch (apb1ClockTmp)
+  {
+    case RCC_CFGR_PPRE1_DIV1:
+      Apb1Clock = AhbClock;
+      break;
+    case RCC_CFGR_PPRE1_DIV2:
+      Apb1Clock = AhbClock >> 1;
+      break;
+    case RCC_CFGR_PPRE1_DIV4:
+      Apb1Clock = AhbClock >> 2;
+      break;
+    case RCC_CFGR_PPRE1_DIV8:
+      Apb1Clock = AhbClock >> 3;
+      break;
+    case RCC_CFGR_PPRE1_DIV16:
+      Apb1Clock = AhbClock >> 4;
+      break;
+    default:
+      Apb1Clock = 0;
+      break;
+  }
+  
+  switch (apb2ClockTmp)
+  {
+    case RCC_CFGR_PPRE2_DIV1:
+      Apb2Clock = AhbClock;
+      break;
+    case RCC_CFGR_PPRE2_DIV2:
+      Apb2Clock = AhbClock >> 1;
+      break;
+    case RCC_CFGR_PPRE2_DIV4:
+      Apb2Clock = AhbClock >> 2;
+      break;
+    case RCC_CFGR_PPRE2_DIV8:
+      Apb2Clock = AhbClock >> 3;
+      break;
+    case RCC_CFGR_PPRE2_DIV16:
+      Apb2Clock = AhbClock >> 4;
+      break;
+    default:
+      Apb2Clock = 0;
+      break;
+  }
+}
+
 /**
  * @brief Initialize delay functions.
  */
 void UTILS_InitDelay()
 {
+  UTILS_UpdateClocks();
  	SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK_Div8);
 	fac_us = SystemCoreClock / 8000000;
 	fac_ms = (uint16_t)fac_us * 1000;

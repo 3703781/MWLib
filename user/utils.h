@@ -1,7 +1,7 @@
 /**
  * @file    utils.h
  * @author  Alientek, Miaow
- * @version 0.1.0
+ * @version 0.2.0
  * @date    2019/06/29
  * @brief   
  *          This file provides utilities:
@@ -9,7 +9,7 @@
  *              2. Serialport on UART1. Functions from stdio.h are avaliable.
  * @note
  *          Minimum version of source file:
- *              0.1.0
+ *              0.2.0
  *
  *          Pin connection of serial port:
  *            ┌─────┐
@@ -49,9 +49,14 @@
  * @}
  */
  
+extern uint32_t AhbClock;
+extern uint32_t Apb1Clock;
+extern uint32_t Apb2Clock;
+
 extern uint8_t USART_RX_BUF[UTILS_RECEIEVE_LENTH]; //接收缓冲,最大USART_REC_LEN个字节.末字节为换行符 
 extern uint16_t USART_RX_STA; //接收状态标记
 
+void UTILS_UpdateClocks(void);
 void UTILS_InitUart(uint32_t baudrate);
 void UTILS_InitDelay(void);
 void UTILS_DelayUs(uint32_t time);
