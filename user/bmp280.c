@@ -8,7 +8,7 @@
  *          functionalities of BMP280:
  *              1. Communicate using I2C
  *              2. Initialization and Configuration
- *              3. Measurie and read out temperature and pressure
+ *              3. Measure and read out temperature and pressure
  * @note     
  *          Minimum version of header file:
  *              0.1.0
@@ -83,14 +83,14 @@
  */
 typedef enum
 {
-  BMP280_ODR_0_5_MS = 0, //!> 0.5ms
-  BMP280_ODR_62_5_MS = 1, //!> 62.5ms
-  BMP280_ODR_125_MS = 2, //!> 125ms
-  BMP280_ODR_250_MS = 3, //!> 250ms
-  BMP280_ODR_500_MS = 4, //!> 500ms
-  BMP280_ODR_1000_MS = 5, //!> 1000ms
-  BMP280_ODR_2000_MS = 6, //!> 2000ms
-  BMP280_ODR_4000_MS = 7 //!> 4000ms
+  BMP280_ODR_0_5_MS = 0, //!< 0.5ms
+  BMP280_ODR_62_5_MS = 1, //!< 62.5ms
+  BMP280_ODR_125_MS = 2, //!< 125ms
+  BMP280_ODR_250_MS = 3, //!< 250ms
+  BMP280_ODR_500_MS = 4, //!< 500ms
+  BMP280_ODR_1000_MS = 5, //!< 1000ms
+  BMP280_ODR_2000_MS = 6, //!< 2000ms
+  BMP280_ODR_4000_MS = 7 //!< 4000ms
 }BMP280_StandbyTime;
 
 /**
@@ -101,12 +101,12 @@ typedef enum
  */
 typedef enum
 {
-  BMP280_OS_NONE = 0, //!> Skip the measurement.
-  BMP280_OS_1X = 1, //!> Ultra low power.
-  BMP280_OS_2X = 2, //!> Low power.
-  BMP280_OS_4X = 3, //!> Standard resolution.
-  BMP280_OS_8X = 4, //!> High resolution.
-  BMP280_OS_16X = 5 //!> Ultra high resolution.
+  BMP280_OS_NONE = 0, //!< Skip the measurement.
+  BMP280_OS_1X = 1, //!< Ultra low power.
+  BMP280_OS_2X = 2, //!< Low power.
+  BMP280_OS_4X = 3, //!< Standard resolution.
+  BMP280_OS_8X = 4, //!< High resolution.
+  BMP280_OS_16X = 5 //!< Ultra high resolution.
 }BMP280_OverSampling;
 
 /**
@@ -128,9 +128,9 @@ typedef enum
  */
 typedef enum
 {
-  BMP280_SLEEP_MODE = 0, //!> No measurements are performed in sleep mode.
-  BMP280_FORCED_MODE = 1, //!> A single measurement is performed in forced mode.
-  BMP280_NORMAL_MODE = 3 //!> Normal mode comprises an automated perpetual cycling between an active measurement period and an inactive standby period.
+  BMP280_SLEEP_MODE = 0, //!< No measurements are performed in sleep mode.
+  BMP280_FORCED_MODE = 1, //!< A single measurement is performed in forced mode.
+  BMP280_NORMAL_MODE = 3 //!< Normal mode comprises an automated perpetual cycling between an active measurement period and an inactive standby period.
 }BMP280_Mode;
 
 #if defined(BMP280_APPLICAITION_HANDHELD_DEVICE_LOW_POWER)

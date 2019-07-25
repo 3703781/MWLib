@@ -8,7 +8,7 @@
  *          functionalities of BMP280:
  *              1. Communicate using I2C
  *              2. Initialization and Configuration
- *              3. Measurie and read out temperature and pressure
+ *              3. Measure and read out temperature and pressure
  * @note     
  *          Minimum version of source file:
  *              0.1.0
@@ -41,7 +41,7 @@
  * @{
  */
  
-#define BMP280_DEVICE_ADDR              0x76 //!> I2C address of the chip.
+#define BMP280_DEVICE_ADDR              0x76 //!< I2C address of the chip.
 
 /** 
  * @defgroup DRV8825_configuration
@@ -64,11 +64,11 @@
  
 //Custom configuration.
 #if defined(BMP280_APPLICATION_CUSTOM)
-#define BMP280_MODE                       BMP280_FORCED_MODE //!> Power mode, see @ref BMP280_Mode .
-#define BMP280_PRESSURE_OVER_SAMPLING     BMP280_OS_16X //!> Pressure accuracy, see @ref BMP280_OverSampling .
-#define BMP280_TEMPERATURE_OVER_SAMPLING  BMP280_OS_16X //!> Temperature accuracy, see @ref BMP280_OverSampling .
-#define BMP280IIR_FILTER                  BMP280_FILTER_OFF //!> IIR filter option, see @ref BMP280_IirFilter .
-#define BMP280_STANDBY_TIME               BMP280_ODR_125_MS //!> This parameter infulences frequency of measurement, @ref BMP280_StandbyTime .
+#define BMP280_MODE                       BMP280_FORCED_MODE //!< Power mode, see @ref BMP280_Mode .
+#define BMP280_PRESSURE_OVER_SAMPLING     BMP280_OS_16X //!< Pressure accuracy, see @ref BMP280_OverSampling .
+#define BMP280_TEMPERATURE_OVER_SAMPLING  BMP280_OS_16X //!< Temperature accuracy, see @ref BMP280_OverSampling .
+#define BMP280IIR_FILTER                  BMP280_FILTER_OFF //!< IIR filter option, see @ref BMP280_IirFilter .
+#define BMP280_STANDBY_TIME               BMP280_ODR_125_MS //!< This parameter infulences frequency of measurement, @ref BMP280_StandbyTime .
 #endif
 
 /** 

@@ -40,7 +40,7 @@
  * @{
  */
 
-#define EC11_USE_CALLBACK         1 //!> enable or disable callback
+#define EC11_USE_CALLBACK           1 //!< enable or disable callback
 
 /** 
  * @defgroup EC11_gpio_define
@@ -94,8 +94,8 @@
  */
 typedef enum
 {
-  EC11_CW = 0, //!> Clockwise
-  EC11_CCW = 1 //!> Anticlockwise
+  EC11_CW = 0, //!< Clockwise
+  EC11_CCW = 1 //!< Anticlockwise
 }EC11_DirectionTypedef;
 
 /**
@@ -103,9 +103,9 @@ typedef enum
  * @param position The current position of the encoder.
  * @param direction Rotate direction, see @ref EC11_DirectionTypedef.
  */
-typedef void (*EC11_RefreshHandler)(int32_t position, EC11_DirectionTypedef direction); //!> Callback funtion prototype.
+typedef void (*EC11_RefreshHandler)(int32_t position, EC11_DirectionTypedef direction); //!< Callback funtion prototype.
 
-typedef void (*EC11_KeyHandler)(void); //!> Callback funtion prototype.
+typedef void (*EC11_KeyHandler)(void); //!< Callback funtion prototype.
 
 #if EC11_USE_CALLBACK == 1
 void EC11_Init(EC11_RefreshHandler refreshHandler, EC11_KeyHandler keyHandler);

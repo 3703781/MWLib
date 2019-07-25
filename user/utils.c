@@ -2,7 +2,7 @@
  * @file    utils.c
  * @author  Alientek, Miaow
  * @version 0.2.0
- * @date    2019/06/29
+ * @date    2019/07/22
  * @brief   
  *          This file provides utilities:
  *              1. Delay functions
@@ -34,9 +34,9 @@
  * @{
  */
 
-uint32_t AhbClock = 0;
-uint32_t Apb1Clock = 0;
-uint32_t Apb2Clock = 0;
+uint32_t AhbClock = 0; //!< AHB clock in Hz.
+uint32_t Apb1Clock = 0; //!< PCLK1(APB1 clock) in Hz.
+uint32_t Apb2Clock = 0; //!< PCLK2(APB2 clock) in Hz.
 
 static uint8_t fac_us = 0;
 static uint16_t fac_ms = 0;
@@ -93,13 +93,19 @@ void USART1_IRQHandler(void)
 } 
 #endif
 
+/**
+ * @brief Update SystemCoreClock/AhbClock/Apb1Clock/Apb2Clock variable according to Clock Register Values.
+ *        The clock variables can be used by the user application to configure peripherals.
+ *
+ * @note  Each time the core clock changes, this function must be called.
+ */
 void UTILS_UpdateClocks()
 {
   uint32_t ahbClockTmp = (RCC->CFGR & ((uint32_t)15 << 4));
   uint32_t apb1ClockTmp = (RCC->CFGR & ((uint32_t)7 << 10));
   uint32_t apb2ClockTmp = (RCC->CFGR & ((uint32_t)7 << 13));
-  SystemCoreClockUpdate();
   
+  SystemCoreClockUpdate();
   switch (ahbClockTmp)
   {
     case RCC_CFGR_HPRE_DIV1:

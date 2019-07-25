@@ -2,7 +2,7 @@
  * @file    utils.h
  * @author  Alientek, Miaow
  * @version 0.2.0
- * @date    2019/06/29
+ * @date    2019/07/22
  * @brief   
  *          This file provides utilities:
  *              1. Delay functions
@@ -43,8 +43,8 @@
 * @defgroup UTILS_configuration
 * @{
 */
-#define UTILS_RECEIEVE_LENTH       200 //!> Maximum size of receieving buffer in bytes
-#define UTILS_USART_RX_ENABLE      1 //!> Can serial port receive
+#define UTILS_RECEIEVE_LENTH       200 //!< Maximum size of receieving buffer in bytes
+#define UTILS_USART_RX_ENABLE      1 //!< Can serial port receive
 /**
  * @}
  */

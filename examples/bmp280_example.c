@@ -1,3 +1,9 @@
+/**
+ * @file    ec11_example.c
+ * @author  Miaow
+ * @date    2019/07/25
+ */
+ 
 #include "stm32f4xx.h"
 #include "utils.h"
 #include "stdio.h"
