@@ -9,9 +9,6 @@
 
 #include "stm32f4xx.h"
 #include "utils.h"
-#include "stdio.h"
-#include "led.h"
-#include "key.h"
-#include "ec11.h"
+#include "sd.h"
 
 #endif

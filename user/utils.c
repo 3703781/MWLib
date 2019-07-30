@@ -86,7 +86,7 @@ void USART1_IRQHandler(void)
           USART_RX_STA++;
           if (USART_RX_STA > (UTILS_RECEIEVE_LENTH - 1))
             USART_RX_STA = 0;//接收数据错误,重新开始接收      
-        }         
+        }
       }
     }            
   }
@@ -257,6 +257,11 @@ void UTILS_DelayMs(uint16_t time)
 void _sys_exit(int x) 
 { 
   x = x; 
+}
+
+void _ttywrch(int ch) 
+{ 
+  ch = ch; 
 }
 
 /**

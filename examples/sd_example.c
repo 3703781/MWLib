@@ -1,9 +1,9 @@
 /**
- * @file    main.c
+ * @file    sd_example.c
  * @author  Miaow
- * @date    2019/07/13
+ * @date    2019/07/30
  */
-#include "main.h"
+
 #include "stm32f4xx.h"
 #include "utils.h"
 #include "sd.h"

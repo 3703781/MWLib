@@ -1,10 +1,45 @@
+/**
+ * @file    sd.h
+ * @author  Miaow
+ * @version 0.1.0
+ * @date    2019/07/30
+ * @brief
+ *          This file provides functions to manage the following 
+ *          functionalities of SD/TF card:
+ *              1. Initialization & Deinitialization
+ *              2. Write in the unit of sector
+ *              3. Read in the unit of sector
+ * @note
+ *          Minimum version of source file:
+ *              0.1.0
+ *          Pin connection:
+ *          ©°©¤©¤©¤©¤©¤©¤©¤©¤©´     ©°©¤©¤©¤©¤©¤©¤©¤©¤©´
+ *          ©¦     PC8©À©¤©¤©¤©¤©¤©ÈD0      ©¦
+ *          ©¦     PC9©À©¤©¤©¤©¤©¤©ÈD1      ©¦
+ *          ©¦     PC9©À©¤©¤©¤©¤©¤©ÈD2      ©¦
+ *          ©¦    PC11©À©¤©¤©¤©¤©¤©ÈD3      ©¦
+ *          ©¦    PC12©À©¤©¤©¤©¤©¤©ÈSCK     ©¦
+ *          ©¦    PD2 ©À©¤©¤©¤©¤©¤©ÈCMD     ©¦
+ *          ©¸©¤©¤©¤©¤©¤©¤©¤©¤©¼     ©¸©¤©¤©¤©¤©¤©¤©¤©¤©¼
+ *          STM32F407       SD/TF Card
+ *          
+ *          The source code repository is available on GitHub:
+ *              https://github.com/3703781
+ *          Your pull requests will be welcome.
+ *          Here are the guidelines for your pull requests:
+ *              1. Respect my coding style.
+ *              2. Avoid to commit several features in one commit.
+ *              3. Make your modification compact - don't reformat source code in your request.
+ *              Inspired by Alientek.
+ */
+ 
 #ifndef __SD_H
 #define __SD_H
 
 #include "stm32f4xx.h" 
 
-#define SD_INIT_CLK        400000.0f //The card shall operate in clock rate less than 400kHz when initializing.
-#define SD_TRANSFER_CLK    25000000.0f
+#define SD_INIT_CLK        400000.0f //!< The card shall operate in clock rate less than 400kHz when initializing.
+#define SD_TRANSFER_CLK    25000000.0f //!< Clock rate wehn transferring
 
 //CSD  
 typedef struct
@@ -63,20 +98,6 @@ typedef struct
   uint8_t  Reserved2;            /*!< always 1 */
 } SD_CardIdentificationTypeDef;
 
-//Current state of the card.
-typedef enum
-{
-  SD_CARD_READY = ((uint32_t)1),
-  SD_CARD_IDENTIFICATION = ((uint32_t)2),
-  SD_CARD_STANDBY = ((uint32_t)3),
-  SD_CARD_TRANSFER = ((uint32_t)4),
-  SD_CARD_SENDING = ((uint32_t)5),
-  SD_CARD_RECEIVING = ((uint32_t)6),
-  SD_CARD_PROGRAMMING = ((uint32_t)7),
-  SD_CARD_DISCONNECTED = ((uint32_t)8),
-  SD_CARD_ERROR = ((uint32_t)0xFF)
-}SD_CardState;
-
 //SD card type.
 typedef enum
 {
@@ -93,18 +114,18 @@ typedef enum
 //SD card information (CSD/CID/RCA).
 typedef struct
 {
-  SD_CardSpecificDataTypeDef CardSpecificData; //CSD
-  SD_CardIdentificationTypeDef CardIdentification; //CID
-  uint16_t RelativeCardAddress; //RCA
-  SD_CardType CardType; //SD card type.
-  uint64_t CardCapacity; //Capacity in byte unit.
-  uint32_t CardBlockSize; //Block size of the card.
-  uint16_t MaxReadWriteBlockBytes; //Maximum read data block length in bytes.
-  float CardSpeedBps; //Transfer speed in bytes/second.
-  float MaxReadCurrentLeftBoundary; //The maximum values for read currents at the minimal VDD in mA.
-  float MaxReadCurrentRightBoundary; //The maximum values for read currents at the maximal VDD in mA.
-  float MaxWriteCurrentLeftBoundary; //The maximum values for write currents at the minimal VDD in mA.
-  float MaxWriteCurrentRightBoundary; //The maximum values for write currents at the maximal VDD in mA.
+  SD_CardSpecificDataTypeDef CardSpecificData; //!< CSD
+  SD_CardIdentificationTypeDef CardIdentification; //!< CID
+  uint16_t RelativeCardAddress; //!< RCA
+  SD_CardType CardType; //!< SD card type.
+  uint64_t CardCapacity; //!< Capacity in byte unit.
+  uint32_t CardBlockSize; //!< Block size of the card.
+  uint16_t MaxReadWriteBlockBytes; //!< Maximum read data block length in bytes.
+  float CardSpeedBps; //!< Transfer speed in bytes/second.
+  float MaxReadCurrentLeftBoundary; //!< The maximum values for read currents at the minimal VDD in mA.
+  float MaxReadCurrentRightBoundary; //!< The maximum values for read currents at the maximal VDD in mA.
+  float MaxWriteCurrentLeftBoundary; //!< The maximum values for write currents at the minimal VDD in mA.
+  float MaxWriteCurrentRightBoundary; //!< The maximum values for write currents at the maximal VDD in mA.
 } SD_CardInfoTypeDef;
 
 extern SD_CardInfoTypeDef SdCardInfo;
@@ -112,6 +133,6 @@ extern SD_CardInfoTypeDef SdCardInfo;
 uint8_t SD_Init(void);
 void SD_DeInit(void);
 uint8_t SD_ReadDisk(uint8_t* buffer, uint32_t sector, uint8_t nSectors);
-uint8_t SD_WriteDisk(uint8_t* buf, uint32_t sector, uint8_t cnt);	//Ð´SD¿¨,fatfs/usbµ÷ÓÃ
+uint8_t SD_WriteDisk(uint8_t* buffer, uint32_t sector, uint8_t nSectors);
 
 #endif 
