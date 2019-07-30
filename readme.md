@@ -24,6 +24,7 @@ The library covers several devices as listed:
 - [MPU9250](./res/mpu9250.jpg) - 9 axis accelerometer gyroscope magnetometer sensor
 - [EC11](./res/ec11.jpg) - 360 degree rotary encoder
 - [BMP280](./res/bmp280.png) - Absolute barometric pressure and temperature sensor
+- [SD/TF Card](./res/sdcard.jpg) - Secure digital card(SD Card) and TransFlash(Micro SD/TF card)
 
 ### Prerequisites
 
