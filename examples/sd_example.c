@@ -1,7 +1,7 @@
 /**
  * @file    sd_example.c
  * @author  Miaow
- * @date    2019/07/30
+ * @date    2019/08/1
  */
 
 #include "stm32f4xx.h"
@@ -25,7 +25,11 @@ uint8_t *readBuffer, *writeBuffer;
 
 void ShowInfomation()
 {
-	switch(SdCardInfo.CardType)
+  SD_CardInfoTypeDef* cardInfo;
+  uint8_t result;
+  result = SD_GetCardInfo(&cardInfo);
+  STOP_IF_ERROR();
+	switch(cardInfo->CardType)
 	{
 		case SD_STD_CAPACITY_SD_CARD_V1_1:
       printf("Card Type: SDSC V1.1\r\n");
@@ -43,30 +47,31 @@ void ShowInfomation()
       break;
 	}
   
-  printf("ManufacturerID: %d\r\n",SdCardInfo.CardIdentification.ManufacturerID);
- 	printf("RCA: %d\r\n", SdCardInfo.RelativeCardAddress);
-  if (SdCardInfo.CardSpecificData.PermWrProtect)
+  printf("Manufacturer ID: %d\r\n",cardInfo->CardIdentification.ManufacturerID);
+ 	printf("RCA: %d\r\n", cardInfo->RelativeCardAddress);
+  if (cardInfo->CardSpecificData.PermWrProtect)
     printf("All write and erase are permanently disabled.\r\n");
-  if (SdCardInfo.CardSpecificData.PermWrProtect)
+  if (cardInfo->CardSpecificData.PermWrProtect)
     printf("All write and erase are now disabled.\r\n");
-  if (SdCardInfo.CardSpecificData.FileFormatGrouop == 0)
+  if (cardInfo->CardSpecificData.FileFormatGrouop == 0)
   {
-    if (SdCardInfo.CardSpecificData.FileFormat == 0)
+    if (cardInfo->CardSpecificData.FileFormat == 0)
       printf("Hard disk-like file system with patition label.\r\n");
-    else if (SdCardInfo.CardSpecificData.FileFormat == 1)
+    else if (cardInfo->CardSpecificData.FileFormat == 1)
       printf("DOS FAT (floppy-like) with boot sector only (no partition table).\r\n");
-    else if (SdCardInfo.CardSpecificData.FileFormat == 2)
+    else if (cardInfo->CardSpecificData.FileFormat == 2)
       printf("Universal File Format.\r\n");
-    else if (SdCardInfo.CardSpecificData.FileFormat == 3)
+    else if (cardInfo->CardSpecificData.FileFormat == 3)
       printf("Others/Unknown.\r\n");
   }
-	printf("Capacity: %lldbytes = %dMB\r\n", SdCardInfo.CardCapacity, (uint32_t)(SdCardInfo.CardCapacity >> 20));
-  printf("Speed: %.0fbps\r\n", SdCardInfo.CardSpeedBps);
-  printf("Maximum read and write block length: %dbytes\r\n", (uint32_t)SdCardInfo.MaxReadWriteBlockBytes);
-  printf("Whether the contents is copied: %d\r\n", (uint32_t)SdCardInfo.CardSpecificData.CopyFlag);
-  //printf("Maximum read current: %.1f~%.1fmA\r\n", SdCardInfo.MaxReadCurrentLeftBoundary, SdCardInfo.MaxReadCurrentRightBoundary);
-  //printf("Maximum write current: %.1f~%.1fmA\r\n", SdCardInfo.MaxWriteCurrentLeftBoundary, SdCardInfo.MaxWriteCurrentRightBoundary);
- 	printf("BlockSize: %d\r\n", SdCardInfo.CardBlockSize);
+	printf("Capacity: %lldB - %.2fGB\r\n", cardInfo->Capacity, (float)cardInfo->Capacity / (float)((uint32_t)1 << 30));
+ 	printf("Block size: %d\r\n", cardInfo->BlockSize);
+  printf("Block count: %d\r\n", cardInfo->BlockCount);
+  printf("Speed: %.0fbps\r\n", cardInfo->MaxTransferRate);
+  printf("Maximum read and write block length: %dbytes\r\n", (uint32_t)cardInfo->MaxReadWriteBlockBytes);
+  printf("Whether the contents is copied: %d\r\n", (uint32_t)cardInfo->CardSpecificData.CopyFlag);
+  //printf("Maximum read current: %.1f~%.1fmA\r\n", SdCardInfo->MaxReadCurrentLeftBoundary, SdCardInfo->MaxReadCurrentRightBoundary);
+  //printf("Maximum write current: %.1f~%.1fmA\r\n", SdCardInfo->MaxWriteCurrentLeftBoundary, SdCardInfo->MaxWriteCurrentRightBoundary);
 }
 
 void ShowData()

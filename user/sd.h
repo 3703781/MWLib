@@ -1,8 +1,8 @@
 /**
  * @file    sd.h
  * @author  Miaow
- * @version 0.1.0
- * @date    2019/07/30
+ * @version 0.2.0
+ * @date    2019/08/01
  * @brief
  *          This file provides functions to manage the following 
  *          functionalities of SD/TF card:
@@ -11,7 +11,7 @@
  *              3. Read in the unit of sector
  * @note
  *          Minimum version of source file:
- *              0.1.0
+ *              0.2.0
  *          Pin connection:
  *          ©°©¤©¤©¤©¤©¤©¤©¤©¤©´     ©°©¤©¤©¤©¤©¤©¤©¤©¤©´
  *          ©¦     PC8©À©¤©¤©¤©¤©¤©ÈD0      ©¦
@@ -114,25 +114,26 @@ typedef enum
 //SD card information (CSD/CID/RCA).
 typedef struct
 {
-  SD_CardSpecificDataTypeDef CardSpecificData; //!< CSD
-  SD_CardIdentificationTypeDef CardIdentification; //!< CID
-  uint16_t RelativeCardAddress; //!< RCA
+  SD_CardSpecificDataTypeDef CardSpecificData; //!< CSD.
+  SD_CardIdentificationTypeDef CardIdentification; //!< CID.
+  uint16_t RelativeCardAddress; //!< RCA.
   SD_CardType CardType; //!< SD card type.
-  uint64_t CardCapacity; //!< Capacity in byte unit.
-  uint32_t CardBlockSize; //!< Block size of the card.
+  uint64_t Capacity; //!< Capacity in byte unit.
+  uint32_t BlockSize; //!< Block size of the card.
+  uint32_t BlockCount; //!< Total number of block.
   uint16_t MaxReadWriteBlockBytes; //!< Maximum read data block length in bytes.
-  float CardSpeedBps; //!< Transfer speed in bytes/second.
+  float MaxTransferRate; //!< Transfer speed in bytes/second.
   float MaxReadCurrentLeftBoundary; //!< The maximum values for read currents at the minimal VDD in mA.
   float MaxReadCurrentRightBoundary; //!< The maximum values for read currents at the maximal VDD in mA.
   float MaxWriteCurrentLeftBoundary; //!< The maximum values for write currents at the minimal VDD in mA.
   float MaxWriteCurrentRightBoundary; //!< The maximum values for write currents at the maximal VDD in mA.
 } SD_CardInfoTypeDef;
 
-extern SD_CardInfoTypeDef SdCardInfo;
-
 uint8_t SD_Init(void);
 void SD_DeInit(void);
 uint8_t SD_ReadDisk(uint8_t* buffer, uint32_t sector, uint8_t nSectors);
 uint8_t SD_WriteDisk(uint8_t* buffer, uint32_t sector, uint8_t nSectors);
+uint8_t SD_GetStatus(uint32_t* status); 
+uint8_t SD_GetCardInfo(SD_CardInfoTypeDef** cardInfo);
 
 #endif 

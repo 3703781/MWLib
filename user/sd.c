@@ -1,8 +1,8 @@
 /**
  * @file    sd.c
  * @author  Miaow
- * @version 0.1.0
- * @date    2019/07/30
+ * @version 0.2.0
+ * @date    2019/08/01
  * @brief
  *          This file provides functions to manage the following 
  *          functionalities of SD/TF card:
@@ -11,16 +11,16 @@
  *              3. Read in the unit of sector
  * @note
  *          Minimum version of header file:
- *              0.1.0
+ *              0.2.0
  *          Pin connection:
- *          ©∞©§©§©§©§©§©§©§©§©¥     ©∞©§©§©§©§©§©§©§©§©¥
- *          ©¶     PC8©¿©§©§©§©§©§©»D0      ©¶
- *          ©¶     PC9©¿©§©§©§©§©§©»D1      ©¶
- *          ©¶     PC9©¿©§©§©§©§©§©»D2      ©¶
- *          ©¶    PC11©¿©§©§©§©§©§©»D3      ©¶
- *          ©¶    PC12©¿©§©§©§©§©§©»SCK     ©¶
- *          ©¶    PD2 ©¿©§©§©§©§©§©»CMD     ©¶
- *          ©∏©§©§©§©§©§©§©§©§©º     ©∏©§©§©§©§©§©§©§©§©º
+ *          ‚îå‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îê     ‚îå‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îê
+ *          ‚îÇ     PC8‚îú‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚î§D0      ‚îÇ
+ *          ‚îÇ     PC9‚îú‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚î§D1      ‚îÇ
+ *          ‚îÇ     PC9‚îú‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚î§D2      ‚îÇ
+ *          ‚îÇ    PC11‚îú‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚î§D3      ‚îÇ
+ *          ‚îÇ    PC12‚îú‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚î§SCK     ‚îÇ
+ *          ‚îÇ    PD2 ‚îú‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚î§CMD     ‚îÇ
+ *          ‚îî‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îò     ‚îî‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îÄ‚îò
  *          STM32F407       SD/TF Card
  *          
  *          The source code repository is available on GitHub:
@@ -94,7 +94,7 @@
 #define SD_CMD_NO_CMD                               ((uint8_t)64)
 /**
                                                                    * @brief Following commands are SD Card Specific commands.
-                                                                   *        SDIO_APP_CMD £∫CMD55 should be sent before sending these commands.
+                                                                   *        SDIO_APP_CMD ÔºöCMD55 should be sent before sending these commands.
                                                                    */
 #define SD_CMD_APP_SD_SET_BUSWIDTH                  ((uint8_t)6)  /*!< For SD Card only */
 #define SD_CMD_SD_APP_STAUS                         ((uint8_t)13) /*!< For SD Card only */
@@ -232,7 +232,28 @@ __align(4) static uint8_t AlignedBuffer1[512];
 static SDIO_InitTypeDef SDIO_InitStructure;
 static SDIO_CmdInitTypeDef SDIO_CmdInitStructure;
 static SDIO_DataInitTypeDef SDIO_DataInitStructure;
+static uint8_t SD_IsInitialized = 0;
 SD_CardInfoTypeDef SdCardInfo; //!< Store parameters of the SD card after initialization.
+
+/**
+ * @brief Get card information structure.
+ * @param cardInfo The card information structure.
+ * @return Result of query.
+ *         SD_OK,
+ *         SD_NOT_CONFIGURED,
+ *         see @ref SD_Result.
+ */
+uint8_t SD_GetCardInfo(SD_CardInfoTypeDef** cardInfo)
+{
+  if (SD_IsInitialized)
+  {
+    *cardInfo = &SdCardInfo;
+    return (uint8_t)SD_OK;
+  }
+  *cardInfo = (SD_CardInfoTypeDef*)NULL;
+  //cardInfo->BlockCount = cardInfo->BlockCount;
+  return (uint8_t)SD_NOT_CONFIGURED;
+}
 
 /**
  * @brief Check if CMD0 received correctly.
@@ -314,7 +335,7 @@ static SD_Result GetR2Result()
 
   return SD_OK;
 }
-
+ 
 /**
  * @brief Check if R3 received correctly.
  * @return Result of commands.
@@ -619,70 +640,70 @@ static void SD_ParseCardInfo(SD_CardInfoTypeDef * cardInfo)
   switch (tmp & 0x07)
   {
   case 0:
-    cardInfo->CardSpeedBps = 100000.0f; //100kbps
+    cardInfo->MaxTransferRate = 100000.0f; //100kbps
     break;
   case 1:
-    cardInfo->CardSpeedBps = 1000000.0f; //1Mbps
+    cardInfo->MaxTransferRate = 1000000.0f; //1Mbps
     break;
   case 2:
-    cardInfo->CardSpeedBps = 10000000.0f; //10Mbps
+    cardInfo->MaxTransferRate = 10000000.0f; //10Mbps
     break;
   case 3:
-    cardInfo->CardSpeedBps = 100000000.0f; //100Mbps
+    cardInfo->MaxTransferRate = 100000000.0f; //100Mbps
     break;
   default:
-    cardInfo->CardSpeedBps = 0.0f;
+    cardInfo->MaxTransferRate = 0.0f;
     break;
   }
   switch ((tmp >> 3) & 0x0F)
   {
   case 1:
-    cardInfo->CardSpeedBps *= 1.0f;
+    cardInfo->MaxTransferRate *= 1.0f;
     break;
   case 2:
-    cardInfo->CardSpeedBps *= 1.2f;
+    cardInfo->MaxTransferRate *= 1.2f;
     break;
   case 3:
-    cardInfo->CardSpeedBps *= 1.3f;
+    cardInfo->MaxTransferRate *= 1.3f;
     break;
   case 4:
-    cardInfo->CardSpeedBps *= 1.5f;
+    cardInfo->MaxTransferRate *= 1.5f;
     break;
   case 5:
-    cardInfo->CardSpeedBps *= 2.0f;
+    cardInfo->MaxTransferRate *= 2.0f;
     break;
   case 6:
-    cardInfo->CardSpeedBps *= 2.5f;
+    cardInfo->MaxTransferRate *= 2.5f;
     break;
   case 7:
-    cardInfo->CardSpeedBps *= 3.0f;
+    cardInfo->MaxTransferRate *= 3.0f;
     break;
   case 8:
-    cardInfo->CardSpeedBps *= 3.5f;
+    cardInfo->MaxTransferRate *= 3.5f;
     break;
   case 9:
-    cardInfo->CardSpeedBps *= 4.0f;
+    cardInfo->MaxTransferRate *= 4.0f;
     break;
   case 0x0A:
-    cardInfo->CardSpeedBps *= 4.5f;
+    cardInfo->MaxTransferRate *= 4.5f;
     break;
   case 0x0B:
-    cardInfo->CardSpeedBps *= 5.0f;
+    cardInfo->MaxTransferRate *= 5.0f;
     break;
   case 0x0C:
-    cardInfo->CardSpeedBps *= 5.5f;
+    cardInfo->MaxTransferRate *= 5.5f;
     break;
   case 0x0D:
-    cardInfo->CardSpeedBps *= 6.0f;
+    cardInfo->MaxTransferRate *= 6.0f;
     break;
   case 0x0E:
-    cardInfo->CardSpeedBps *= 7.0f;
+    cardInfo->MaxTransferRate *= 7.0f;
     break;
   case 0x0F:
-    cardInfo->CardSpeedBps *= 8.0f;
+    cardInfo->MaxTransferRate *= 8.0f;
     break;
   default:
-    cardInfo->CardSpeedBps = 0.0f;
+    cardInfo->MaxTransferRate = 0.0f;
     break;
   }
   tmp = (uint8_t)((CardSpecificData[1] & 0xFF000000) >> 24);
@@ -735,10 +756,10 @@ static void SD_ParseCardInfo(SD_CardInfoTypeDef * cardInfo)
     cardInfo->CardSpecificData.DeviceSizeMul |= (tmp & 0x80) >> 7; //device size multiplier (C_SIZE_MULT)
 
     //Calculate card capacity and block size.
-    cardInfo->CardCapacity = (uint64_t)cardInfo->CardSpecificData.DeviceSize + 1;
-    cardInfo->CardCapacity *= (uint64_t)1 << (cardInfo->CardSpecificData.DeviceSizeMul + 2);
-    cardInfo->CardBlockSize = 1 << (cardInfo->CardSpecificData.RdBlockLen);
-    cardInfo->CardCapacity *= cardInfo->CardBlockSize;
+    cardInfo->Capacity = (uint64_t)cardInfo->CardSpecificData.DeviceSize + 1;
+    cardInfo->Capacity *= (uint64_t)1 << (cardInfo->CardSpecificData.DeviceSizeMul + 2);
+    cardInfo->BlockSize = 1 << (cardInfo->CardSpecificData.RdBlockLen);
+    cardInfo->Capacity *= cardInfo->BlockSize;
   }
   else if (CardType == SD_HIGH_CAPACITY_SD_CARD)
   {
@@ -750,10 +771,11 @@ static void SD_ParseCardInfo(SD_CardInfoTypeDef * cardInfo)
     cardInfo->CardSpecificData.DeviceSize |= (tmp); //Device size (C_SIZE)
     tmp = (uint8_t)((CardSpecificData[2] & 0x0000FF00) >> 8);
 
-    //Calculate card capacity and block size.
-    cardInfo->CardCapacity = ((uint64_t)cardInfo->CardSpecificData.DeviceSize + 1) * 512 * 1024;
-    cardInfo->CardBlockSize = 512;
+    //Calculate card capacity ,block size.
+    cardInfo->Capacity = ((uint64_t)cardInfo->CardSpecificData.DeviceSize + 1) * 512 * 1024;
+    cardInfo->BlockSize = 512;
   }
+  cardInfo->BlockCount = (uint32_t)(cardInfo->Capacity / cardInfo->BlockSize);
   cardInfo->CardSpecificData.EraseGrSize = (tmp & 0x40) >> 6;
   cardInfo->CardSpecificData.EraseGrMul = (tmp & 0x3F) << 1;
   tmp = (uint8_t)(CardSpecificData[2] & 0x000000FF);
@@ -771,9 +793,9 @@ static void SD_ParseCardInfo(SD_CardInfoTypeDef * cardInfo)
   cardInfo->CardSpecificData.ContentProtectAppli = (tmp & 0x01);
   tmp = (uint8_t)((CardSpecificData[3] & 0x0000FF00) >> 8);
   cardInfo->CardSpecificData.FileFormatGrouop = (tmp & 0x80) >> 7; //File format group (FILE_FORMAT_GRP )
-  cardInfo->CardSpecificData.CopyFlag = (tmp & 0x40) >> 6; //copy flag (OTP) (COPY)
-  cardInfo->CardSpecificData.PermWrProtect = (tmp & 0x20) >> 5; //permanent write protection (PERM_WRITE_PROTECT)
-  cardInfo->CardSpecificData.TempWrProtect = (tmp & 0x10) >> 4; //temporary write protection (TMP_WRITE_PROTECT)
+  cardInfo->CardSpecificData.CopyFlag = (tmp & 0x40) >> 6; //Copy flag (OTP) (COPY)
+  cardInfo->CardSpecificData.PermWrProtect = (tmp & 0x20) >> 5; //Permanent write protection (PERM_WRITE_PROTECT)
+  cardInfo->CardSpecificData.TempWrProtect = (tmp & 0x10) >> 4; //Temporary write protection (TMP_WRITE_PROTECT)
   cardInfo->CardSpecificData.FileFormat = (tmp & 0x0C) >> 2; //File format (FILE_FORMAT)
   cardInfo->CardSpecificData.ECC = (tmp & 0x03);
   tmp = (uint8_t)(CardSpecificData[3] & 0x000000FF);
@@ -819,7 +841,7 @@ static void SD_ParseCardInfo(SD_CardInfoTypeDef * cardInfo)
 
 /**
  * @brief Select a card.
- * @param The address of the card to be selected°£
+ * @param The address of the card to be selected„ÄÇ
  * @return Result of commands.
  *         SD_OK
  *         SD_CMD_RSP_TIMEOUT
@@ -897,7 +919,7 @@ static SD_Result SD_PowerOn()
       //Sends host capacity support information (HCS) and asks the accessed card to
       //send its operating condition register (OCR) content in the response.
       //HCS is effective when card receives SEND_IF_COND command.
-      //Reserved bit shall be set to °Æ0°Ø.CCS bit is assigned to OCR[30].
+      //Reserved bit shall be set to ‚Äò0‚Äô.CCS bit is assigned to OCR[30].
       SDIO_CmdInitStructure.SDIO_Argument = SD_VOLTAGE_WINDOW_SD |
         (CardType == SD_STD_CAPACITY_SD_CARD_V1_1 ? SD_STD_CAPACITY : SD_HIGH_CAPACITY); //3.2 ~3.3V
       SDIO_CmdInitStructure.SDIO_CmdIndex = SD_CMD_SD_APP_OP_COND; //ACMD41
@@ -1100,9 +1122,9 @@ uint8_t SD_Init()
   {
     uint8_t clockDivision;
     uint32_t tmpReg;
-    if (SdCardInfo.CardSpeedBps != 0.0f)
+    if (SdCardInfo.MaxTransferRate != 0.0f)
     {
-      maxClock = SD_TRANSFER_CLK < SdCardInfo.CardSpeedBps ? SD_TRANSFER_CLK : SdCardInfo.CardSpeedBps;
+      maxClock = SD_TRANSFER_CLK < SdCardInfo.MaxTransferRate ? SD_TRANSFER_CLK : SdCardInfo.MaxTransferRate;
       clockDivision = (uint8_t)ceilf((float)Apb2Clock / maxClock - 2.0f);
     }
     else
@@ -1120,6 +1142,7 @@ uint8_t SD_Init()
     tmpReg |= clockDivision;
     SDIO->CLKCR = tmpReg;
   }
+  SD_IsInitialized = 1;
   return (uint8_t)result;
 }
 
@@ -1128,6 +1151,7 @@ uint8_t SD_Init()
  */
 void SD_DeInit()
 {
+  SD_IsInitialized = 0;
   SDIO_DeInit();
   SDIO_SetPowerState(SDIO_PowerState_OFF);
 }
@@ -1405,7 +1429,7 @@ static SD_Result SD_ReadMultiBlocks(uint8_t * buffer, uint64_t address, uint32_t
  *         SD_ILLEGAL_CMD,
  *         see @ref SD_Result.
  */
-static SD_Result SD_GetStatus(uint32_t * status)
+uint8_t SD_GetStatus(uint32_t * status)
 {
   SD_Result result = SD_OK;
   SDIO_CmdInitStructure.SDIO_Argument = (uint32_t)RelativeCardAddress << 16;
@@ -1417,10 +1441,10 @@ static SD_Result SD_GetStatus(uint32_t * status)
 
   result = GetR1Result(SD_CMD_SEND_STATUS);
   if (result != SD_OK)
-    return result;
+    return (uint8_t)result;
 
   *status = SDIO->RESP1;
-  return SD_OK;
+  return (uint8_t)result;
 }
 
 /**
@@ -1487,8 +1511,9 @@ static SD_Result SD_WriteBlock(uint8_t * buffer, uint64_t address)
   result = GetR1Result(SD_CMD_WRITE_SINGLE_BLOCK);
   if (result != SD_OK)
     return result;
+  if (SDIO->RESP1 & (uint32_t)0x4000000)
+    return SD_WRITE_PROT_VIOLATION;
 
-  //StopCondition = 0; //No stop
 
   SDIO_DataInitStructure.SDIO_DataBlockSize = SD_GetPowerOf2(blockSize) << 4;
   SDIO_DataInitStructure.SDIO_DataLength = blockSize;
@@ -1553,26 +1578,26 @@ static SD_Result SD_WriteBlock(uint8_t * buffer, uint64_t address)
   //  else if (DeviceMode == SD_DMA_MODE)
   //  {
   //    TransferError = SD_OK;
-  //    StopCondition = 0;			//µ•øÈ–¥,≤ª–Ë“™∑¢ÀÕÕ£÷π¥´ ‰÷∏¡Ó 
-  //    TransferEnd = 0;				//¥´ ‰Ω· ¯±Í÷√Œª£¨‘⁄÷–∂œ∑˛ŒÒ÷√1
-  //    SDIO->MASK |= (1 << 1) | (1 << 3) | (1 << 8) | (1 << 4) | (1 << 9);	//≈‰÷√≤˙…˙ ˝æ›Ω” ’ÕÍ≥…÷–∂œ
-  //    SD_DMA_Config((uint32_t*)buffer, blockSize, DMA_DIR_MemoryToPeripheral);				//SDIO DMA≈‰÷√
-  //    SDIO->DCTRL |= 1 << 3;								//SDIO DMA πƒ‹.  
-  //    while (((DMA2->LISR & (1 << 27)) == RESET) && timeout)timeout--;//µ»¥˝¥´ ‰ÕÍ≥… 
+  //    StopCondition = 0;			//ÂçïÂùóÂÜô,‰∏çÈúÄË¶ÅÂèëÈÄÅÂÅúÊ≠¢‰º†ËæìÊåá‰ª§ 
+  //    TransferEnd = 0;				//‰º†ËæìÁªìÊùüÊ†áÁΩÆ‰ΩçÔºåÂú®‰∏≠Êñ≠ÊúçÂä°ÁΩÆ1
+  //    SDIO->MASK |= (1 << 1) | (1 << 3) | (1 << 8) | (1 << 4) | (1 << 9);	//ÈÖçÁΩÆ‰∫ßÁîüÊï∞ÊçÆÊé•Êî∂ÂÆåÊàê‰∏≠Êñ≠
+  //    SD_DMA_Config((uint32_t*)buffer, blockSize, DMA_DIR_MemoryToPeripheral);				//SDIO DMAÈÖçÁΩÆ
+  //    SDIO->DCTRL |= 1 << 3;								//SDIO DMA‰ΩøËÉΩ.  
+  //    while (((DMA2->LISR & (1 << 27)) == RESET) && timeout)timeout--;//Á≠âÂæÖ‰º†ËæìÂÆåÊàê 
   //    if (timeout == 0)
   //    {
-  //      SD_Init();	 					//÷ÿ–¬≥ı ºªØSDø®,ø…“‘Ω‚æˆ–¥»ÎÀ¿ª˙µƒŒ Ã‚
-  //      return SD_DATA_TIMEOUT;			//≥¨ ±	 
+  //      SD_Init();	 					//ÈáçÊñ∞ÂàùÂßãÂåñSDÂç°,ÂèØ‰ª•Ëß£ÂÜ≥ÂÜôÂÖ•Ê≠ªÊú∫ÁöÑÈóÆÈ¢ò
+  //      return SD_DATA_TIMEOUT;			//Ë∂ÖÊó∂	 
   //    }
   //    timeout = SDIO_DATATIMEOUT;
   //    while ((TransferEnd == 0) && (TransferError == SD_OK) && timeout)timeout--;
-  //    if (timeout == 0)return SD_DATA_TIMEOUT;			//≥¨ ±	 
+  //    if (timeout == 0)return SD_DATA_TIMEOUT;			//Ë∂ÖÊó∂	 
   //    if (TransferError != SD_OK)return TransferError;
   //  }
 
   SDIO->ICR = SDIO_STATIC_FLAGS; //Clear all flags.
   do {
-    result = SD_GetStatus(&status);
+    result = (SD_Result)SD_GetStatus(&status);
     status = (status >> 9) & 0x0F;
   } while ((result == SD_OK) && ((status == SD_CARD_PROGRAMMING) || (status == SD_CARD_RECEIVING)));
   SDIO->ICR = SDIO_STATIC_FLAGS; //Clear all flags.
@@ -1655,6 +1680,8 @@ static SD_Result SD_WriteMultiBlocks(uint8_t * buffer, uint64_t address, uint32_
   result = GetR1Result(SD_CMD_WRITE_MULT_BLOCK);
   if (result != SD_OK)
     return result;
+  if (SDIO->RESP1 & (uint32_t)0x4000000)
+    return SD_WRITE_PROT_VIOLATION;
 
   SDIO_DataInitStructure.SDIO_DataBlockSize = SD_GetPowerOf2(blockSize) << 4;
   SDIO_DataInitStructure.SDIO_DataLength = nBlocks * blockSize;
@@ -1735,21 +1762,21 @@ static SD_Result SD_WriteMultiBlocks(uint8_t * buffer, uint64_t address, uint32_
 //    else if (DeviceMode == SD_DMA_MODE)
 //    {
 //      TransferError = SD_OK;
-//      StopCondition = 1;			//∂‡øÈ–¥,–Ë“™∑¢ÀÕÕ£÷π¥´ ‰÷∏¡Ó 
-//      TransferEnd = 0;				//¥´ ‰Ω· ¯±Í÷√Œª£¨‘⁄÷–∂œ∑˛ŒÒ÷√1
-//      SDIO->MASK |= (1 << 1) | (1 << 3) | (1 << 8) | (1 << 4) | (1 << 9);	//≈‰÷√≤˙…˙ ˝æ›Ω” ’ÕÍ≥…÷–∂œ
-//      SD_DMA_Config((uint32_t*)buffer, nBlocks * blockSize, DMA_DIR_MemoryToPeripheral);		//SDIO DMA≈‰÷√
-//      SDIO->DCTRL |= 1 << 3;								//SDIO DMA πƒ‹. 
+//      StopCondition = 1;			//Â§öÂùóÂÜô,ÈúÄË¶ÅÂèëÈÄÅÂÅúÊ≠¢‰º†ËæìÊåá‰ª§ 
+//      TransferEnd = 0;				//‰º†ËæìÁªìÊùüÊ†áÁΩÆ‰ΩçÔºåÂú®‰∏≠Êñ≠ÊúçÂä°ÁΩÆ1
+//      SDIO->MASK |= (1 << 1) | (1 << 3) | (1 << 8) | (1 << 4) | (1 << 9);	//ÈÖçÁΩÆ‰∫ßÁîüÊï∞ÊçÆÊé•Êî∂ÂÆåÊàê‰∏≠Êñ≠
+//      SD_DMA_Config((uint32_t*)buffer, nBlocks * blockSize, DMA_DIR_MemoryToPeripheral);		//SDIO DMAÈÖçÁΩÆ
+//      SDIO->DCTRL |= 1 << 3;								//SDIO DMA‰ΩøËÉΩ. 
 //      timeout = SDIO_DATATIMEOUT;
-//      while (((DMA2->LISR & (1 << 27)) == RESET) && timeout)timeout--;//µ»¥˝¥´ ‰ÕÍ≥… 
-//      if (timeout == 0)	 								//≥¨ ±
+//      while (((DMA2->LISR & (1 << 27)) == RESET) && timeout)timeout--;//Á≠âÂæÖ‰º†ËæìÂÆåÊàê 
+//      if (timeout == 0)	 								//Ë∂ÖÊó∂
 //      {
-//        SD_Init();	 					//÷ÿ–¬≥ı ºªØSDø®,ø…“‘Ω‚æˆ–¥»ÎÀ¿ª˙µƒŒ Ã‚
-//        return SD_DATA_TIMEOUT;			//≥¨ ±	 
+//        SD_Init();	 					//ÈáçÊñ∞ÂàùÂßãÂåñSDÂç°,ÂèØ‰ª•Ëß£ÂÜ≥ÂÜôÂÖ•Ê≠ªÊú∫ÁöÑÈóÆÈ¢ò
+//        return SD_DATA_TIMEOUT;			//Ë∂ÖÊó∂	 
 //      }
 //      timeout = SDIO_DATATIMEOUT;
 //      while ((TransferEnd == 0) && (TransferError == SD_OK) && timeout)timeout--;
-//      if (timeout == 0)return SD_DATA_TIMEOUT;			//≥¨ ±	 
+//      if (timeout == 0)return SD_DATA_TIMEOUT;			//Ë∂ÖÊó∂	 
 //      if (TransferError != SD_OK)return TransferError;
 //    }
 
@@ -1759,7 +1786,7 @@ static SD_Result SD_WriteMultiBlocks(uint8_t * buffer, uint64_t address, uint32_
 //    result = SD_GetStatus(&cardstate);
 //  }
   do {
-    result = SD_GetStatus(&status);
+    result = (SD_Result)SD_GetStatus(&status);
     status = (status >> 9) & 0x0F;
   } while ((result == SD_OK) && ((status == SD_CARD_PROGRAMMING) || (status == SD_CARD_RECEIVING)));
   SDIO->ICR = SDIO_STATIC_FLAGS; //Clear all flags.
@@ -1809,23 +1836,24 @@ uint8_t SD_ReadDisk(uint8_t * buffer, uint32_t sector, uint8_t nSectors)
  */
 uint8_t SD_WriteDisk(uint8_t * buffer, uint32_t sector, uint8_t nSectors)
 {
-  uint8_t sta = SD_OK;
-  uint8_t n;
-  uint64_t lsector = sector;
-  lsector <<= 9;
+  uint8_t result = SD_OK;
+  uint8_t i;
+  uint64_t byteAddress = (uint64_t)sector << 9;
   if ((uint32_t)buffer % 4 != 0)
   {
-    for (n = 0; n < nSectors; n++)
+    for (i = 0; i < nSectors; i++)
     {
       memcpy(AlignedBuffer1, buffer, 512);
-      sta = SD_WriteBlock(AlignedBuffer1, lsector + 512 * n);//µ•∏ˆsectorµƒ–¥≤Ÿ◊˜
+      result = SD_WriteBlock(AlignedBuffer1, byteAddress + ((uint64_t)i << 9));
       buffer += 512;
     }
   }
   else
   {
-    if (nSectors == 1)sta = SD_WriteBlock(buffer, lsector);    	//µ•∏ˆsectorµƒ–¥≤Ÿ◊˜
-    else sta = SD_WriteMultiBlocks(buffer, lsector, nSectors);	//∂‡∏ˆsector  
+    if (nSectors == 1)
+      result = SD_WriteBlock(buffer, byteAddress);
+    else 
+      result = SD_WriteMultiBlocks(buffer, byteAddress, nSectors);
   }
-  return sta;
+  return result;
 }
