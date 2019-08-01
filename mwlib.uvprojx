@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F40_41xxx,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>.\user;.\system;.\fwlib;.\core;..\TB6612FNG;.\user\mpu6050;.\user\oled;F:\Keil_v5\ARM\ARMCC\include</IncludePath>
+              <IncludePath>.\user;.\system;.\fwlib;.\core;..\TB6612FNG;.\user\mpu6050;.\user\oled;.\fatfs</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -379,6 +379,16 @@
         </TargetArmAds>
       </TargetOption>
       <Groups>
+        <Group>
+          <GroupName>core</GroupName>
+          <Files>
+            <File>
+              <FileName>startup_stm32f40_41xxx.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\core\startup_stm32f40_41xxx.s</FilePath>
+            </File>
+          </Files>
+        </Group>
         <Group>
           <GroupName>fwlib</GroupName>
           <Files>
@@ -560,6 +570,31 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>fatfs</GroupName>
+          <Files>
+            <File>
+              <FileName>diskio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\fatfs\diskio.c</FilePath>
+            </File>
+            <File>
+              <FileName>ff.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\fatfs\ff.c</FilePath>
+            </File>
+            <File>
+              <FileName>ffsystem.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\fatfs\ffsystem.c</FilePath>
+            </File>
+            <File>
+              <FileName>ffunicode.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\fatfs\ffunicode.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>user</GroupName>
           <Files>
             <File>
@@ -671,16 +706,6 @@
               <FileName>sd.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\user\sd.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>core</GroupName>
-          <Files>
-            <File>
-              <FileName>startup_stm32f40_41xxx.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\core\startup_stm32f40_41xxx.s</FilePath>
             </File>
           </Files>
         </Group>

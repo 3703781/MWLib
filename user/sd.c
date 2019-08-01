@@ -1066,7 +1066,9 @@ uint8_t SD_Init()
   GPIO_InitTypeDef  GPIO_InitStructure;
   //NVIC_InitTypeDef NVIC_InitStructure;
   //RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, ENABLE);
-
+  
+  if (SD_IsInitialized)
+    return result;
   UTILS_UpdateClocks();
   
   //GPIO
@@ -1142,7 +1144,7 @@ uint8_t SD_Init()
     tmpReg |= clockDivision;
     SDIO->CLKCR = tmpReg;
   }
-  SD_IsInitialized = 1;
+  SD_IsInitialized = result == SD_OK;
   return (uint8_t)result;
 }
 

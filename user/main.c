@@ -7,9 +7,10 @@
 #include "stm32f4xx.h"
 #include "utils.h"
 #include "sd.h"
+#include "ff.h"
 #include "stdlib.h"
 
-#define SECTOR_ADDRESS  500ul //!< Address of sectors to read or write
+#define SECTOR_ADDRESS  200ul //!< Address of sectors to read or write
 #define N_SECTORS       2ul //!< Number of sectors to read or write.
 
 
@@ -25,7 +26,11 @@ uint8_t *readBuffer, *writeBuffer;
 
 void ShowInfomation()
 {
-	switch(SdCardInfo.CardType)
+  SD_CardInfoTypeDef* cardInfo;
+  uint8_t result;
+  result = SD_GetCardInfo(&cardInfo);
+  STOP_IF_ERROR();
+	switch(cardInfo->CardType)
 	{
 		case SD_STD_CAPACITY_SD_CARD_V1_1:
       printf("Card Type: SDSC V1.1\r\n");
@@ -43,91 +48,91 @@ void ShowInfomation()
       break;
 	}
   
-  printf("ManufacturerID: %d\r\n",SdCardInfo.CardIdentification.ManufacturerID);
- 	printf("RCA: %d\r\n", SdCardInfo.RelativeCardAddress);
-  if (SdCardInfo.CardSpecificData.PermWrProtect)
+  printf("Manufacturer ID: %d\r\n",cardInfo->CardIdentification.ManufacturerID);
+ 	printf("RCA: %d\r\n", cardInfo->RelativeCardAddress);
+  if (cardInfo->CardSpecificData.PermWrProtect)
     printf("All write and erase are permanently disabled.\r\n");
-  if (SdCardInfo.CardSpecificData.PermWrProtect)
+  if (cardInfo->CardSpecificData.PermWrProtect)
     printf("All write and erase are now disabled.\r\n");
-  if (SdCardInfo.CardSpecificData.FileFormatGrouop == 0)
+  if (cardInfo->CardSpecificData.FileFormatGrouop == 0)
   {
-    if (SdCardInfo.CardSpecificData.FileFormat == 0)
+    if (cardInfo->CardSpecificData.FileFormat == 0)
       printf("Hard disk-like file system with patition label.\r\n");
-    else if (SdCardInfo.CardSpecificData.FileFormat == 1)
+    else if (cardInfo->CardSpecificData.FileFormat == 1)
       printf("DOS FAT (floppy-like) with boot sector only (no partition table).\r\n");
-    else if (SdCardInfo.CardSpecificData.FileFormat == 2)
+    else if (cardInfo->CardSpecificData.FileFormat == 2)
       printf("Universal File Format.\r\n");
-    else if (SdCardInfo.CardSpecificData.FileFormat == 3)
+    else if (cardInfo->CardSpecificData.FileFormat == 3)
       printf("Others/Unknown.\r\n");
   }
-	printf("Capacity: %lldbytes = %dMB\r\n", SdCardInfo.CardCapacity, (uint32_t)(SdCardInfo.CardCapacity >> 20));
-  printf("Speed: %.0fbps\r\n", SdCardInfo.CardSpeedBps);
-  printf("Maximum read and write block length: %dbytes\r\n", (uint32_t)SdCardInfo.MaxReadWriteBlockBytes);
-  printf("Whether the contents is copied: %d\r\n", (uint32_t)SdCardInfo.CardSpecificData.CopyFlag);
-  //printf("Maximum read current: %.1f~%.1fmA\r\n", SdCardInfo.MaxReadCurrentLeftBoundary, SdCardInfo.MaxReadCurrentRightBoundary);
-  //printf("Maximum write current: %.1f~%.1fmA\r\n", SdCardInfo.MaxWriteCurrentLeftBoundary, SdCardInfo.MaxWriteCurrentRightBoundary);
- 	printf("BlockSize: %d\r\n", SdCardInfo.CardBlockSize);
-}
-
-void ShowData()
-{
-  uint64_t i;
-  for (i = BYTE_ADDRESS; i < BYTE_ADDRESS + N_BYTES; i++)
-  {
-    if ((i & 0xFul) == 0)
-      printf("%09llX\t", i);
-    printf("%02X ", readBuffer[i - BYTE_ADDRESS]);
-    if (((i + 1) & 0xFul) == 0)
-      printf("\r\n");
-    if (((i + 1) & 0x1FFul) == 0)
-      printf("\r\n");
-  }
+	printf("Capacity: %lldB - %.2fGB\r\n", cardInfo->Capacity, (float)cardInfo->Capacity / (float)((uint32_t)1 << 30));
+ 	printf("Block size: %d\r\n", cardInfo->BlockSize);
+  printf("Block count: %d\r\n", cardInfo->BlockCount);
+  printf("Speed: %.0fbps\r\n", cardInfo->MaxTransferRate);
+  printf("Maximum read and write block length: %dbytes\r\n", (uint32_t)cardInfo->MaxReadWriteBlockBytes);
+  printf("Whether the contents is copied: %d\r\n", (uint32_t)cardInfo->CardSpecificData.CopyFlag);
+  //printf("Maximum read current: %.1f~%.1fmA\r\n", SdCardInfo->MaxReadCurrentLeftBoundary, SdCardInfo->MaxReadCurrentRightBoundary);
+  //printf("Maximum write current: %.1f~%.1fmA\r\n", SdCardInfo->MaxWriteCurrentLeftBoundary, SdCardInfo->MaxWriteCurrentRightBoundary);
 }
 
 int main()
 {        
   uint8_t result = 0;
-  uint64_t i;
+  FATFS fs;
+  FIL fil;
+  FIL fil2;
+  UINT bw;
+  UINT br;
+  uint8_t readBuffer[256] = {0};
   
 	UTILS_InitDelay();
 	UTILS_InitUart(115200);
+  SD_Init();
+  ShowInfomation();
   
-  //Initialize the SD card.
-  result = SD_Init();
- 	STOP_IF_ERROR();
-  
-  //Print card infomation
-	ShowInfomation();
-  
-  //Prepare for data
-  readBuffer = malloc(N_BYTES);
-  writeBuffer = malloc(N_BYTES);
-  for (i = 0; i < N_BYTES; i++)
-    writeBuffer[i] = (uint8_t)rand();
-  
-  //Write data to SECTOR_ADDRESS
-  result = SD_WriteDisk(writeBuffer, SECTOR_ADDRESS, N_SECTORS);
+  //printf("\r\n\r\nCreate FAT volume......");
+  //result = f_mkfs("0", FM_FAT32, 0, NULL, 1024);
+  //STOP_IF_ERROR();
+  //printf("OK\r\n");
+
+  printf("Register work area......");
+  f_mount(&fs, "0", 0);
   STOP_IF_ERROR();
+  printf("OK\r\n");
   
-  //Read data from SECTOR_ADDRESS
-  result = SD_ReadDisk(readBuffer, SECTOR_ADDRESS, N_SECTORS);
+  printf("Create a file as new......");
+  result = f_open(&fil, "hello.txt", FA_OPEN_ALWAYS | FA_WRITE);
   STOP_IF_ERROR();
+  printf("OK\r\n");
+
+  printf("Write a message......");
+  f_write(&fil, "Hello, World!\r\n", 15, &bw);
+  result = bw != 15;
+  STOP_IF_ERROR();
+  printf("OK\r\n");
+
+  printf("Close the file......");
+  f_close(&fil);
+  printf("OK\r\n");
   
-  //Show data
-  ShowData();
+  printf("Open a file to read......");
+  result = f_open(&fil2, "abc.txt", FA_READ);
+  STOP_IF_ERROR();
+  printf("OK\r\n");
   
-  //Validate data
-  for (i = 0; i < N_BYTES; i++)
-  {
-    if (readBuffer[i] != writeBuffer[i])
-    {
-      printf("Error: readBuf[%lld]=%d, writeBuf[%lld]=%d\r\n", i, readBuffer[i], i, writeBuffer[i]);
-      break;
-    }
-  }
-  printf("END\r\n");
-  free(readBuffer);
-  free(writeBuffer);
+  printf("Read a message......");
+  f_read(&fil2, readBuffer, 255, &br);
+  printf("OK\r\n");
+  printf("%dB read: %s", (uint32_t)br, readBuffer);
+  
+  printf("Close the file......");
+  f_close(&fil2);
+  printf("OK\r\n");
+
+  printf("Unregister work area......");
+  f_mount(0, "", 0);
+  printf("OK\r\n");  
+  
 	while(1)
 	{
 
