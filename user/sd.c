@@ -290,13 +290,14 @@ static SD_Result GetCmd0Result()
 static SD_Result GetR1Result(uint8_t command)
 {
   uint32_t tmpStaReg;
+  uint32_t timeout = 500000;
   //Wait for CRC check failed/Command response timeout/Command response received (CRC check passed).
-  while ((SDIO->STA & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CTIMEOUT | SDIO_FLAG_CMDREND)) == RESET);
+  while ((SDIO->STA & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CTIMEOUT | SDIO_FLAG_CMDREND)) == RESET && --timeout);
   tmpStaReg = SDIO->STA;
   SDIO->ICR = SDIO_STATIC_FLAGS; //Clear all flags.
 
   //Response timeout.
-  if ((tmpStaReg & SDIO_FLAG_CTIMEOUT) != RESET)
+  if ((tmpStaReg & SDIO_FLAG_CTIMEOUT) != RESET || timeout == 0)
     return SD_CMD_RSP_TIMEOUT;
 
   //CRC check failed
@@ -853,7 +854,7 @@ static SD_Result SD_Select(uint32_t address)
 {
   //Command toggles a card between the stand - by and transfer states or between
   //the programming and disconnect states. In both cases, the card is selected by its
-  //own relative addressand gets deselected by any other address; address 0 deselects all.
+  //own relative address and gets deselected by any other address; address 0 deselects all.
   SDIO_CmdInitStructure.SDIO_Argument = address;
   SDIO_CmdInitStructure.SDIO_CmdIndex = SD_CMD_SEL_DESEL_CARD; //CMD7
   SDIO_CmdInitStructure.SDIO_Response = SDIO_Response_Short; //R1
@@ -1070,6 +1071,7 @@ uint8_t SD_Init()
   if (SD_IsInitialized)
     return result;
   UTILS_UpdateClocks();
+  SD_DeInit();
   
   //GPIO
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD, ENABLE);
@@ -1154,6 +1156,7 @@ uint8_t SD_Init()
 void SD_DeInit()
 {
   SD_IsInitialized = 0;
+  SD_Select(0 << 16);
   SDIO_DeInit();
   SDIO_SetPowerState(SDIO_PowerState_OFF);
 }
