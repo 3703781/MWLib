@@ -4,11 +4,12 @@
  * @version 0.2.0
  * @date    2019/07/25
  * @brief   
- *          The STM32, as a slave, transfers data with a host through SPI bus.
- *          The communication protocol is documented in ./docs/基于SPI的通信协议 以树莓派为例.pdf
+ *          This file provides functions to manage the following 
+ *          functionalities of nrf24l01:
  *          This file provides functions to manage the following functionalities:
  *              1. Initialization
- *              2. Using the protocol to transmit data
+ *              2. Send data
+ *              3. Receive data
  * @note
  *          Minimum version of source file:
  *              0.2.0
@@ -74,6 +75,7 @@
  * @defgroup BSP_SPI_bus_define
  * @{
  */
+#define BSP_SPI_CLK_FUNC                      RCC_APB2PeriphClockCmd
 #define BSP_SPI_SPI                           SPI1
 #define BSP_SPI_SPI_CLK                       RCC_APB2Periph_SPI1
 #define BSP_SPI_MODE                          BSP_SPI_MODE_SLAVE

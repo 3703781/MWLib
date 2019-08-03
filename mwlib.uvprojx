@@ -707,6 +707,11 @@
               <FileType>1</FileType>
               <FilePath>.\user\sd.c</FilePath>
             </File>
+            <File>
+              <FileName>nrf24l01.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\nrf24l01.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

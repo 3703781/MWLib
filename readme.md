@@ -25,6 +25,7 @@ The library covers several devices as listed:
 - [EC11](./res/ec11.jpg) - 360 degree rotary encoder
 - [BMP280](./res/bmp280.png) - Absolute barometric pressure and temperature sensor
 - [SD/TF Card](./res/sdcard.jpg) - Secure digital card(SD Card) and TransFlash(Micro SD/TF card)
+- [NRF24L01+](./res/nrf24l01.jpg) - 2.4GHz wireless RF transceiver module 
 
 ### Prerequisites
 
@@ -87,6 +88,8 @@ Source code in the following files is released under GPLv3 license for non-comme
 ./user/ec11.h
 ./user/bmp280.c
 ./user/bmp280.h
+./user/nrf24l01.c
+./user/nrf24l01.h
 ```
 ## Acknowledgments
 

@@ -85,7 +85,7 @@ void BSP_SPI_Init(BSP_SPI_ReceiveCallback receiveCallback)
   GPIO_PinAFConfig(BSP_SPI_MOSI_PORT, BSP_SPI_MOSI_GPIO_PINSOURCE, BSP_SPI_GPIO_AF);
   
   //SPI slave
-  RCC_APB2PeriphClockCmd(BSP_SPI_SPI_CLK, ENABLE);
+  BSP_SPI_CLK_FUNC(BSP_SPI_SPI_CLK, ENABLE);
   #if BSP_SPI_MODE == BSP_SPI_MODE_MASTER
   SPI_InitStructure.SPI_BaudRatePrescaler = BSP_SPI_BAUDRATE;
   #else
