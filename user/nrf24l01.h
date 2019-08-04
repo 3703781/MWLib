@@ -46,10 +46,11 @@
  * @defgroup NRF24L01_configuration
  * @{
  */
-#define NRF24L01_TX_PLOAD_WIDTH               32
-#define NRF24L01_RX_PLOAD_WIDTH               32
-#define NRF24L01_TX_ADDRESS                   0x6A,0x03,0xB4,0x29,0xCD
+#define NRF24L01_SEND_LENGTH                  32
+#define NRF24L01_RECEIVE_LENGTH               NRF24L01_SEND_LENGTH
+#define NRF24L01_TX_ADDRESS                   0x6A, 0x03, 0xB4, 0x29, 0xCD
 #define NRF24L01_RX_ADDRESS                   NRF24L01_TX_ADDRESS
+#define NRF24L01_CHANNEL                      27
 /**
  * @}
  */

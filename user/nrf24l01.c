@@ -234,8 +234,7 @@ void NRF24L01_Init(NRF24L01_Mode mode)
   SPI_InitStructure.SPI_CRCPolynomial = 7;
   SPI_Init(NRF24L01_SPI, &SPI_InitStructure);
   SPI_Cmd(NRF24L01_SPI, ENABLE);
-  //NRF24L01_CE_PORT->BSRRH = NRF24L01_CE_PIN; //CE = L, enable the chip.
-  
+  NRF24L01_CE_PORT->BSRRH = NRF24L01_CE_PIN; //CE = L.
   //Select mode
   NRF24L01_SetMode(mode);
 }
@@ -317,12 +316,15 @@ uint8_t NRF24L01_Check()
   uint8_t buf[] = { 0xB6, 0xB7 ,0xB8, 0xB9, 0xBA };
   uint8_t i;
   NRF24L01_WriteBytes(NRF24L01_W_REGISTER | NRF24L01_REG_TX_ADDR, buf, 5);
+
   NRF24L01_ReadBytes(NRF24L01_REG_TX_ADDR, buf, 5);
   for (i = 0xB6; i < 0xBB; i++)
   {
     if (buf[i - buf[0]] != i)
       return NRF24L01_CheckError;
   }
+  
+  NRF24L01_WriteBytes(NRF24L01_W_REGISTER | NRF24L01_REG_TX_ADDR, (uint8_t*)TX_ADDRESS, 5);
   return NRF24L01_Ok;
 }
 
@@ -336,11 +338,11 @@ NRF24L01_Status NRF24L01_Send(uint8_t * data)
 {
   uint8_t result;
   __IO uint32_t timeout;
-  NRF24L01_WriteBytes(NRF24L01_W_TX_PLOAD, data, NRF24L01_TX_PLOAD_WIDTH);
-  NRF24L01_CE_PORT->BSRRL = NRF24L01_CE_PIN; //CE = H
-  timeout = 400;
-  while(timeout--);
-  NRF24L01_CE_PORT->BSRRH = NRF24L01_CE_PIN; //CE = L
+  NRF24L01_WriteBytes(NRF24L01_W_TX_PLOAD, data, NRF24L01_SEND_LENGTH);
+//  NRF24L01_CE_PORT->BSRRL = NRF24L01_CE_PIN; //CE = H
+//  timeout = 500;
+//  while(timeout--);
+//  NRF24L01_CE_PORT->BSRRH = NRF24L01_CE_PIN; //CE = L
   
   timeout = 100000;
   while ((NRF24L01_IRQ_PORT->IDR & NRF24L01_IRQ_PIN) && timeout--); //Wait until compelete.
@@ -364,12 +366,11 @@ NRF24L01_Status NRF24L01_Send(uint8_t * data)
 NRF24L01_Status NRF24L01_Receive(uint8_t * data)
 {
   uint8_t result;
-  __IO uint32_t timeout;
   result = NRF24L01_ReadByte(NRF24L01_REG_STATUS); //Read out status.
   NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_STATUS, result); //Clear TX_DS and MAX_RT pending bit.
   if (result & NRF24L01_REG_STATUS_RX_DR_MSK) //Data arrives RX FIFO.
   {
-    NRF24L01_ReadBytes(NRF24L01_R_RX_PLOAD, data, NRF24L01_RX_PLOAD_WIDTH);
+    NRF24L01_ReadBytes(NRF24L01_R_RX_PLOAD, data, NRF24L01_RECEIVE_LENGTH);
     NRF24L01_WriteByte(NRF24L01_FLUSH_RX, 0xFF); //Clear RX FIFO.
     return NRF24L01_Ok;
   }
@@ -385,26 +386,28 @@ void NRF24L01_SetMode(NRF24L01_Mode mode)
   if (mode == NRF24L01_ReceiveMode)
   {
     NRF24L01_CE_PORT->BSRRH = NRF24L01_CE_PIN;
+    NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_CONFIG, 0x00); //Power down mode.
     NRF24L01_WriteBytes(NRF24L01_W_REGISTER | NRF24L01_REG_RX_ADDR_P0, (uint8_t*)RX_ADDRESS, NRF24L01_RX_ADR_WIDTH); //Set pipe 0 Address.
-    NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_EN_AA, NRF24L01_REG_EN_AA_P0_MSK);    //使能通道0的自动应答    
-    NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_EN_RXADDR, NRF24L01_REG_EN_RXADDR_P0_MSK);//使能通道0的接收地址  	 
-    NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_RF_CH, 40); //Sets the frequency channel to 40.
-    NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_RX_PW_P0, NRF24L01_RX_PLOAD_WIDTH); //选择通道0的有效数据宽度 	    
-    NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_RF_SETUP, 0x0F); //设置TX发射参数,0db增益,2Mbps,低噪声增益开启   
-    NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_CONFIG, 0x0F); //配置基本工作模式的参数;PWR_UP,EN_CRC,16BIT_CRC,接收模式 
+    NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_EN_AA, NRF24L01_REG_EN_AA_P0_MSK); //Enable auto acknowledge of pipe 0.
+    NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_EN_RXADDR, NRF24L01_REG_EN_RXADDR_P0_MSK); //Enable pipe 0.	 
+    NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_RF_CH, NRF24L01_CHANNEL); //Sets the frequency channel.
+    NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_RX_PW_P0, NRF24L01_RECEIVE_LENGTH); //Set pipe 0 to 32-byte width.
+    NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_RF_SETUP, 0x0F); //0dB, 2Mbps   
+    NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_CONFIG, 0x0F); //PWR_UP, EN_CRC, 16BIT_CRC, RX mode, all interrupt.
     NRF24L01_CE_PORT->BSRRL = NRF24L01_CE_PIN;
   }
   else if (mode == NRF24L01_SendMode)
   {
     NRF24L01_CE_PORT->BSRRH = NRF24L01_CE_PIN;
-    NRF24L01_WriteBytes(NRF24L01_W_REGISTER | NRF24L01_REG_TX_ADDR, (uint8_t*)TX_ADDRESS, NRF24L01_TX_ADR_WIDTH);//写TX节点地址 
-    NRF24L01_WriteBytes(NRF24L01_W_REGISTER | NRF24L01_REG_RX_ADDR_P0, (uint8_t*)RX_ADDRESS, NRF24L01_RX_ADR_WIDTH); //设置TX节点地址,主要为了使能ACK	  
+    NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_CONFIG, 0x00); //Power down mode.
+    NRF24L01_WriteBytes(NRF24L01_W_REGISTER | NRF24L01_REG_TX_ADDR, (uint8_t*)TX_ADDRESS, NRF24L01_TX_ADR_WIDTH);
+    NRF24L01_WriteBytes(NRF24L01_W_REGISTER | NRF24L01_REG_RX_ADDR_P0, (uint8_t*)RX_ADDRESS, NRF24L01_RX_ADR_WIDTH);
     NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_EN_AA, NRF24L01_REG_EN_AA_P0_MSK); //Enable auto acknowledgement data pipe 0.
     NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_EN_RXADDR, NRF24L01_REG_EN_RXADDR_P0_MSK); //Enable data pipe 0 address.
     NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_SETUP_RETR, 0x1A);//automatic retransmission delay = 586us, Auto retransmit count = 10.
-    NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_RF_CH, 40); //Sets the frequency channel to 40.
-    NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_RF_SETUP, 0x0F); //设置TX发射参数,0db增益,2Mbps,低噪声增益开启   
-    NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_CONFIG, 0x0E); //配置基本工作模式的参数;PWR_UP,EN_CRC,16BIT_CRC,接收模式,开启所有中断
+    NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_RF_CH, NRF24L01_CHANNEL); //Sets the frequency channel.
+    NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_RF_SETUP, 0x0F); //0dB, 2Mbps  
+    NRF24L01_WriteByte(NRF24L01_W_REGISTER | NRF24L01_REG_CONFIG, 0x0E); //PWR_UP, EN_CRC, 16BIT_CRC, TX mode, all interrupt.
     NRF24L01_CE_PORT->BSRRL = NRF24L01_CE_PIN;
   }
   else if (mode == NRF24L01_None)
