@@ -712,6 +712,11 @@
               <FileType>1</FileType>
               <FilePath>.\user\nrf24l01.c</FilePath>
             </File>
+            <File>
+              <FileName>servo.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\servo.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

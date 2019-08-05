@@ -12,7 +12,7 @@ MWLib is an awesome library for STM32F4 series developed with Keil MDK, based on
 ## Getting Started
 
 ### Overview
-This library is based on *STM32F4 Standard Peripheral Libraries* , thus it follows its code style. The file *[mwlib.uvprojx](./mwlib.uvprojx)* is MDK project file. Source code under the folder *[user](.user/)* is in paired form of *xxx.h* and *xxx.c*, where *xxx* refers to model name of the device. There are code from *STM32F4 Standard Peripheral Libraries*  under the folder *[fwlib](./fwlib)* and some tool functions in *[utils.c](./user/utils.c)*.
+This library is based on *STM32F4 Standard Peripheral Libraries* and follows its code style. The file *[mwlib.uvprojx](./mwlib.uvprojx)* is MDK project file. Source code under the folder *[user](.user/)* is in paired form of *xxx.h* and *xxx.c*, where *xxx* refers to model name of the device. There are code from *STM32F4 Standard Peripheral Libraries*  under the folder *[fwlib](./fwlib)* and some tool functions in *[utils.c](./user/utils.c)*.
 The library covers several devices as listed:
 - [DRV8825](./res/drv8826.jpg) - Stepper motor driver carrier
 - [E18-D80NK](./res/e18d80nk.jpg) - Infrared photoelectric sensor
@@ -26,6 +26,7 @@ The library covers several devices as listed:
 - [BMP280](./res/bmp280.png) - Absolute barometric pressure and temperature sensor
 - [SD/TF Card](./res/sdcard.jpg) - Secure digital card(SD Card) and TransFlash(Micro SD/TF card)
 - [NRF24L01+](./res/nrf24l01.jpg) - 2.4GHz wireless RF transceiver module 
+- [Servo](./res/servo.jpg) - Analog servo (e.g., ES08A, MG90, MG995, etc).
 
 ### Prerequisites
 
@@ -42,7 +43,7 @@ Of most devices in this library, you can simply use them as follows:
 void fun()
 {
 	//Initialize the device.
-	xxx_Init();
+	XXX_Init();
 	
 	//Your code.
 	...
@@ -90,6 +91,8 @@ Source code in the following files is released under GPLv3 license for non-comme
 ./user/bmp280.h
 ./user/nrf24l01.c
 ./user/nrf24l01.h
+./user/servo.c
+./user/servo.h
 ```
 ## Acknowledgments
 
