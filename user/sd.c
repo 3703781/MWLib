@@ -37,6 +37,9 @@
 #include "utils.h"
 #include "math.h"
 
+/** @addtogroup SD
+ * @{
+ */
 #define SDIO_STATIC_FLAGS                           ((uint32_t)0x000005FF)
 #define SD_CMDTIMEOUT                               ((uint32_t)0x00010000)	  
 #define SDIO_DATATIMEOUT                            ((uint32_t)0xFFFFFFFF)
@@ -93,9 +96,9 @@
 #define SD_CMD_GEN_CMD                              ((uint8_t)56)
 #define SD_CMD_NO_CMD                               ((uint8_t)64)
 /**
-                                                                   * @brief Following commands are SD Card Specific commands.
-                                                                   *        SDIO_APP_CMD ：CMD55 should be sent before sending these commands.
-                                                                   */
+ * @brief Following commands are SD Card Specific commands.
+ *        SDIO_APP_CMD ：CMD55 should be sent before sending these commands.
+ */
 #define SD_CMD_APP_SD_SET_BUSWIDTH                  ((uint8_t)6)  /*!< For SD Card only */
 #define SD_CMD_SD_APP_STAUS                         ((uint8_t)13) /*!< For SD Card only */
 #define SD_CMD_SD_APP_SEND_NUM_WRITE_BLOCKS         ((uint8_t)22) /*!< For SD Card only */
@@ -105,9 +108,9 @@
 #define SD_CMD_SDIO_RW_DIRECT                       ((uint8_t)52) /*!< For SD I/O Card only */
 #define SD_CMD_SDIO_RW_EXTENDED                     ((uint8_t)53) /*!< For SD I/O Card only */
 /**
-                                                                    * @brief Following commands are SD Card Specific security commands.
-                                                                    *        SDIO_APP_CMD should be sent before sending these commands.
-                                                                    */
+ * @brief Following commands are SD Card Specific security commands.
+ *        SDIO_APP_CMD should be sent before sending these commands.
+ */
 #define SD_CMD_SD_APP_GET_MKB                       ((uint8_t)43) /*!< For SD Card only */
 #define SD_CMD_SD_APP_GET_MID                       ((uint8_t)44) /*!< For SD Card only */
 #define SD_CMD_SD_APP_SET_CER_RN1                   ((uint8_t)45) /*!< For SD Card only */
@@ -1862,3 +1865,6 @@ uint8_t SD_WriteDisk(uint8_t * buffer, uint32_t sector, uint8_t nSectors)
   }
   return result;
 }
+/**
+ * @}
+ */

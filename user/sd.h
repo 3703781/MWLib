@@ -38,8 +38,21 @@
 
 #include "stm32f4xx.h" 
 
+/** 
+ * @defgroup SD
+ * @brief SD/TF card driver modules
+ * @{
+ */
+
+/** 
+ * @defgroup SD_configuration
+ * @{
+ */
 #define SD_INIT_CLK        400000.0f //!< The card shall operate in clock rate less than 400kHz when initializing.
-#define SD_TRANSFER_CLK    25000000.0f //!< Clock rate wehn transferring
+#define SD_TRANSFER_CLK    25000000.0f //!< Maximum clock rate when transferring.
+/**
+ * @}
+ */
 
 //CSD  
 typedef struct
@@ -135,5 +148,8 @@ uint8_t SD_ReadDisk(uint8_t* buffer, uint32_t sector, uint8_t nSectors);
 uint8_t SD_WriteDisk(uint8_t* buffer, uint32_t sector, uint8_t nSectors);
 uint8_t SD_GetStatus(uint32_t* status); 
 uint8_t SD_GetCardInfo(SD_CardInfoTypeDef** cardInfo);
+/**
+ * @}
+ */ 
 
 #endif 

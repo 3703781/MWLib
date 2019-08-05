@@ -35,6 +35,9 @@
 #include "nrf24l01.h"
 #include "utils.h"
 
+/** @addtogroup NRF24L01
+ * @{
+ */
 //Commands.
 #define NRF24L01_R_REGISTER                       0x00 //Read register. [4:0] Rregister address.
 #define NRF24L01_W_REGISTER                       0x20 //Write register. [4:0] Rregister address.
@@ -415,3 +418,6 @@ void NRF24L01_SetMode(NRF24L01_Mode mode)
     NRF24L01_CE_PORT->BSRRH = NRF24L01_CE_PIN;
   }
 }
+/**
+ * @}
+ */

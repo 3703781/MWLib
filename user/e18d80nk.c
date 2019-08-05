@@ -1,5 +1,5 @@
 #include "e18d80nk.h"
-#include "stm32f4xx.h"
+#include "utils.h"
 
 void (*E18D80NK_IrqHandler)(uint8_t state);
 

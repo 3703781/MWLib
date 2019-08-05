@@ -8,6 +8,6 @@
 #define __MAIN_H
 
 #include "utils.h"
-#include "servo.h"
+#include "hcsr04.h"
 
 #endif
