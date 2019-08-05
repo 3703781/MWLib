@@ -693,11 +693,6 @@
               <FilePath>.\user\bmp280.c</FilePath>
             </File>
             <File>
-              <FileName>tof10120.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\user\tof10120.c</FilePath>
-            </File>
-            <File>
               <FileName>bsp_spi.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\user\bsp_spi.c</FilePath>
