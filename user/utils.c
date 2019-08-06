@@ -1,8 +1,8 @@
 /**
  * @file    utils.c
  * @author  Alientek, Miaow
- * @version 0.2.0
- * @date    2019/07/22
+ * @version 0.2.1
+ * @date    2019/08/05
  * @brief
  *          This file provides utilities:
  *              1. Delay functions

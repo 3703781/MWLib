@@ -33,7 +33,6 @@
 #include "bsp_iic.h"   												  	  
 #include "stm32f4xx.h"
 #include "utils.h"
-#include "math.h"
 
 /**
  * @brief MPU6050的INT引脚和中断相关定义
@@ -50,9 +49,9 @@
 /**
  * @brief MPU6050的IIC器件地址 AD0引脚接地
  */
-#define MPU6050_ADDR				0X68
-#define MPU6050_SAMPLE_RATE         200
-#define MPU6050_FIFO_RATE           200
+#define MPU6050_ADDR            0X68
+#define MPU6050_SAMPLE_RATE     200 //不使用DMP时有效；使用DMP时固定为200Hz
+#define MPU6050_FIFO_RATE       50
 
 typedef enum {
     MPU6050_FSR_250DPS = 0,
@@ -79,74 +78,18 @@ typedef enum {
     MPU6050_FILTER_2100HZ_NOLPF
 }MPU6050_LpfTypedef;
 
-/**
- * @brief 初始化
- * @return 0-成功; 1-失败
- * @note 陀螺仪±2000dps, 加速度传±2g, 采样率50Hz, 
- *       中断关, I2C主模式关, FIFO关, INT低有效, 陀螺仪X轴时钟
- */
+typedef void (*MPU6050_DataArrivalHandler)(float pitch, float roll, float yaw);
+
 uint8_t MPU6050_Init(void);
-/**
- * @brief 开启外部中断, 开始接收MPU6050的数据
- */
 void MPU6050_BeginReceive(void);
-/**
- * @brief 设置陀螺仪量程
- * @param fsr MPU6050_FSR_XXXXDPS(见MPU6050_GyroFsrTypedef)
- * @return 0-成功; 1-失败
- */
 uint8_t MPU6050_SetGyroFsr(MPU6050_GyroFsrTypedef fsr);
-/**
- * @brief 设置加速度量程
- * @param fsr MPU6050_FSR_XXXXG(MPU6050_AccelFsrTypedef)
- * @return 0-成功; 1-失败
- */
 uint8_t MPU6050_SetAccelFsr(MPU6050_AccelFsrTypedef fsr);
-/**
- * @brief 设置采样率(假定Fs=1KHz)
- * @param rate 4~1000Hz
- * @return 0-成功; 1-失败
- */
 uint8_t MPU6050_SetSampleRate(uint16_t rate);
-/**
- * @brief 数字低通滤波器
- * @param lpf MPU6050_FILTER_XXXHZ(见MPU6050_LpfTypedef)
- * @return 0-成功; 1-失败
- */
 uint8_t MPU6050_SetLPF(MPU6050_LpfTypedef lpf);
-/**
- * @brief 读取温度
- * @return 返回摄氏温度值
- */
 float MPU6050_GetTemperature(void);
-/**
- * @brief 读取陀螺仪
- * @param gx x轴原始读数(带符号)
- * @param gy y轴原始读数(带符号)
- * @param gz z轴原始读数(带符号)
- * @return 0-成功; 1-失败
- */
 uint8_t MPU6050_GetGyroscope(int16_t *gx, int16_t *gy, int16_t *gz);
-/**
- * @brief 读取加速度计
- * @param gx x轴原始读数(带符号)
- * @param gy y轴原始读数(带符号)
- * @param gz z轴原始读数(带符号)
- * @return 0-成功; 1-失败
- */
 uint8_t MPU6050_GetAccelerometer(int16_t *ax, int16_t *ay, int16_t *az);
-/**
- * @brief 连着dmp一起初始化
- * @return 0-成功; 其他-失败
- */
-uint8_t MPU6050_InitWithDmp(void (* irqHandler)(void));
-/**
- * @brief 得到dmp处理后的数据
- * @param pitch 俯仰角, 精度:0.1°, 范围 -90°~90°
- * @param pitch 横滚角, 精度:0.1°, 范围 -180°~180°
- * @param pitch 航向角, 精度:0.1°, 范围 -180°~180°
- * @return 0-成功; 其他-失败
- */
+uint8_t MPU6050_InitWithDmp(MPU6050_DataArrivalHandler dataArrivalHandler);
 uint8_t MPU6050_GetDmpData(float *pitch, float *roll, float *yaw);
 
 #endif
