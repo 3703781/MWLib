@@ -1,55 +1,86 @@
 /**
- * @file    main.c
+ * @file    ec11_example.c
  * @author  Miaow
- * @date    2019/08/06
+ * @date    2019/07/05
  */
-#include "main.h"
-PID_InfoTypeDef PidInfo;
+ 
+#include "stm32f4xx.h"
+#include "utils.h"
+#include "ec11.h"
+#include "oled.h"
+#include "si7021.h"
+#include "serialport.h"
 
-int f_myprintf(FIL* fp, const char* format, ...)
+OLED_HandleTypedef OledHandle = 
 {
-  va_list aptr;
-  char buffer[255];
-  uint32_t bw;
+  .stringX = 0,
+  .stringY = 0,
+  .stringClear = ENABLE,
+};
 
-  va_start(aptr, format);
-  vsprintf(buffer, format, aptr);
-  va_end(aptr);
-  f_write(fp, buffer, strlen(buffer), &bw);
-
-  return bw;
+#if EC11_USE_CALLBACK == 1
+/**
+ * @brief This is the function called when the the position changes.
+ * @param position The current position of the encoder.
+ * @param direction Rotate direction, see @ref EC11_DirectionTypedef.
+ */
+void RefreshHandler(int32_t position, EC11_DirectionTypedef direction)
+{
+  OledHandle.stringX = 0;
+  OledHandle.stringY = 0;
+  OledHandle.stringClear = ENABLE;
+  OLED_DisplayFormat(&OledHandle, "pos=%d,dir=%d", position, direction);
 }
 
-int main()
+/**
+ * @brief This is the function called when the key is pressed.
+ */
+void KeyHandler()
 {
-  uint32_t i = 0;
-  uint32_t j = 0;
-  char buffer[255];
-  FIL outputDataFile;
-  FATFS fileSystem;
+  static uint32_t count = 0;
+  OledHandle.stringX = 0;
+  OledHandle.stringY = 4;
+  OledHandle.stringClear = ENABLE;
+  OLED_DisplayFormat(&OledHandle, "pressed=%d", ++count);
+}
+#endif
+
+/**
+ * @brief entry~
+ */
+int main(void)
+{
   UTILS_InitDelay();
   UTILS_InitUart(115200);
-
-  f_mount(&fileSystem, "0", 1);
+  SERIALPORT_Init();
+  //SI7021_Init();
+  //OLED_Init(&OledHandle);
+  //OLED_TurnOn();
   
-  printf("Start simulating!\r\n");
-  for (j = 0; j < 10; j++)
+  #if EC11_USE_CALLBACK == 1
+  //EC11_Init(RefreshHandler, KeyHandler); //Initialize with callback
+  #else
+  EC11_Init(); //Initialize
+  #endif
+  
+  while (1)
   {
-    sprintf(buffer, "0:/data%f.csv", (float)j / 20.0f);
-    f_open(&outputDataFile, buffer, FA_OPEN_ALWAYS | FA_WRITE);
-    f_printf(&outputDataFile, "count,target,error,output\r\n");
-    PID_Init(&PidInfo, 0.2f, 0.1f, 0.2f);
-    PidInfo.kp = (float)j / 20.0f;
-    for (i = 0; i < 400; i++)
+	#if EC11_USE_CALLBACK == 0
+    printf("%d\r\n", EC11_GetPosition());
+    UTILS_DelayMs(200);
+	#endif
+    //UTILS_DelayMs(500);
+    switch (SERIALPORT_GetCommand())
     {
-      PID_Realize(&PidInfo, 200.0f, PidInfo.outputValue);
-      f_myprintf(&outputDataFile, "%d,%f,%f,%f\r\n", i, 200.0f, PidInfo.error, PidInfo.outputValue);
+      case SERIALPORT_CommandStartRun:
+        SERIALPORT_StartRec();
+      break;
+      case SERIALPORT_CommandStopRun:
+        SERIALPORT_StopRec();
+      break;
+      default:
+        break;
     }
-    f_close(&outputDataFile);
+      
   }
-  printf("End\r\n");
-
-  f_unmount("0");
-
-  while (1);
 }

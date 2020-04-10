@@ -722,6 +722,21 @@
               <FileType>1</FileType>
               <FilePath>.\user\pid.c</FilePath>
             </File>
+            <File>
+              <FileName>si7021.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\si7021.c</FilePath>
+            </File>
+            <File>
+              <FileName>serialport.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\serialport.c</FilePath>
+            </File>
+            <File>
+              <FileName>pms7003.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\pms7003.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

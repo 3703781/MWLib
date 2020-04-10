@@ -785,7 +785,7 @@ void OLED_DisplayLog(OLED_HandleTypedef *oledHandle, const char *format, ...)
                     linesScrollUp--;
                 }
                 //(x << 1) + (x << 2)就是x * 6, 一个字符宽6个像素
-                OLED_DisplayCharacter((x << 1) + (x << 2), y > (OLED_LINES - 1) ? (OLED_LINES - 1) : y, oledHandle->__string[i], 8);
+                OLED_DisplayCharacter((x << 1) + (x << 2), y > (OLED_LINES - 1) ? (y = (OLED_LINES - 1)) : y, oledHandle->__string[i], 8);
                 if((++x == OLED_CHARACTERS_ONE_LINE) && (x = needYPlus = 0, ++y > (OLED_LINES - 1)))//忍住, 别骂。。到达行尾则自动换行并忽略下一个\n换行符
                     linesScrollUp++;//如果换行后超出屏幕底部, 向上多滚一行
                 break;
