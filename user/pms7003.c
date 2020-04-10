@@ -98,7 +98,7 @@ void PMS7003_SetMode(uint8_t mode, uint8_t state)
     PMS7003_WAIT_UART_BUSY();
   }
   
-  PMS7003_Command[2] = 0xE2;
+  PMS7003_Command[2] = 0xE4;
   PMS7003_Command[4] = state;
   for (i = 0; i < 5; i++)
     tmp += PMS7003_Command[i];
@@ -119,6 +119,8 @@ void PMS7003_SetMode(uint8_t mode, uint8_t state)
 uint8_t PMS7003_Measure(PMS7003_ResultTypedef* result)
 {
   uint8_t i;
+  uint8_t lastReceive = 0;
+  uint8_t flag = 0;
   __IO uint16_t tmp = 0;
   uint8_t tmpResult[32];
   PMS7003_Command[2] = 0xE2;
@@ -133,13 +135,21 @@ uint8_t PMS7003_Measure(PMS7003_ResultTypedef* result)
     PMS7003_WAIT_UART_BUSY();
   }
   
-  i = 0;
+  i = 1;
   while (++tmp < 65535 && i < 32)
   {
     if (PMS7003_USARTX->SR & USART_FLAG_RXNE)
     {
-      tmpResult[i++] = (uint8_t)(PMS7003_USARTX->DR);
+      uint8_t receive = (uint8_t)(PMS7003_USARTX->DR);
+      if (flag == 0 && lastReceive == 0x42 && receive == 0x4d)
+      {
+        tmpResult[0] = 0x42;
+        flag = 1;
+      }
+      if (flag)
+        tmpResult[i++] = receive;
       PMS7003_USARTX->SR &= ~USART_FLAG_RXNE;
+      lastReceive = receive;
     }
   }
   if (tmp >= 65535)
