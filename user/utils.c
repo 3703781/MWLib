@@ -1,15 +1,15 @@
 /**
  * @file    utils.c
  * @author  Alientek, Miaow
- * @version 0.2.1
- * @date    2019/08/05
+ * @version 1.0.0
+ * @date    2020/04/28
  * @brief
  *          This file provides utilities:
  *              1. Delay functions
  *              2. Serialport on UART1. Functions from stdio.h are avaliable.
  * @note
  *          Minimum version of header file:
- *              0.2.0
+ *              1.0.0
  *
  *          Pin connection of serial port:
  *            ©°©¤©¤©¤©¤©¤©´
@@ -40,6 +40,7 @@ uint32_t Apb2Clock = 0; //!< PCLK2(APB2 clock) in Hz.
 
 static float fac_us = 0;
 static float fac_ms = 0;
+
 #pragma import(__use_no_semihosting)             
 
 struct __FILE
@@ -238,7 +239,7 @@ static inline void UTILS_DelayXms(uint16_t nms)
 
 /**
  * @brief Delay in millisecond.
- * @param time  Time in ms.
+ * @param timev Time in ms.
  * @note DO NOT use in OS.
  */
 void UTILS_DelayMs(uint16_t time)
@@ -276,7 +277,7 @@ int fputc(int ch, FILE * f)
 
 /**
  * @brief Initialize UART1.
- * @param baudrate Baudrate of communication in bps
+ * @param baudrate Baudrate of communication in bps.
  */
 void UTILS_InitUart(uint32_t baudrate)
 {
@@ -320,6 +321,137 @@ void UTILS_InitUart(uint32_t baudrate)
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   NVIC_Init(&NVIC_InitStructure);
 #endif
+}
+
+/**
+ * @brief  Converts a 2 digit decimal to BCD format.
+ * @param  value Byte to be converted.
+ * @return Converted byte
+ */
+uint8_t UTILS_ByteToBcd2(uint8_t value)
+{
+  uint8_t bcdhigh = 0;
+  
+  while (value >= 10)
+  {
+    bcdhigh++;
+    value -= 10;
+  }
+  return  ((uint8_t)(bcdhigh << 4) | value);
+}
+
+/**
+ * @brief  Convert from 2 digit BCD to Binary.
+ * @param  value BCD value to be converted.
+ * @return Converted word
+ */
+uint8_t UTILS_Bcd2ToByte(uint8_t value)
+{
+  uint8_t tmp = 0;
+  tmp = ((uint8_t)(value & (uint8_t)0xF0) >> (uint8_t)0x4) * 10;
+  return (tmp + (value & (uint8_t)0x0F));
+}
+
+
+
+/**
+ * @brief  Initializes the RTC peripheral according to the date time sting.
+ * @param  dateTimeString A string in format "yyyy-MM-dd ddd HH:mm:ss" or "yyyy-MM-dd dddd HH:mm:ss".
+ *                       For example, "2020-04-05 Sun 17:02:00", "2020-04-05 Sunday 08:02:00".
+ *                       The weekday can be omitted - "2020-04-05 None 08:30:30"
+ * @param forceInitialize ENABLE - Initialize all the way.
+ *                        DISABLE - Initialize only when not initialized.
+ */
+void UTILS_InitDateTime(const char* dateTimeString, FunctionalState forceInitialize)
+{
+  uint8_t i = 0, j, c1, c2;
+  uint8_t weekdayTable[16] = {2, 0, 4, 0, 1, 0, 5, 0, 7, 6, 0, 0, 0, 0, 0, 3};
+  
+  RTC_InitTypeDef RTC_InitStructure;
+  RTC_TimeTypeDef RTC_TimeStructure;
+  RTC_DateTypeDef RTC_DateStructure;
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
+  PWR_BackupAccessCmd(ENABLE);
+  RTC_WriteBackupRegister(RTC_BKP_DR1, (uint32_t)(dateTimeString[0] - '0') * 1000 + (uint32_t)(dateTimeString[1] - '0') * 100);
+  
+  while(dateTimeString[i++] != ' ');
+  j = i;
+  while(dateTimeString[j++] != ' ');
+  c1 = dateTimeString[i] <= 'Z' ? dateTimeString[i] + 32 : dateTimeString[i];
+  c2 = dateTimeString[i + 1] <= 'Z' ? dateTimeString[i + 1] + 32 : dateTimeString[i + 1];
+  
+  if (forceInitialize || RTC_ReadBackupRegister(RTC_BKP_DR0) != 0x1234)
+  {
+    RCC_LSEConfig(RCC_LSE_ON);
+    while (RCC_GetFlagStatus(RCC_FLAG_LSERDY) == RESET);
+
+    RCC_RTCCLKConfig(RCC_RTCCLKSource_LSE);
+    RCC_RTCCLKCmd(ENABLE);
+    RTC_InitStructure.RTC_AsynchPrediv = 127;
+    RTC_InitStructure.RTC_SynchPrediv = 255;
+    RTC_InitStructure.RTC_HourFormat = RTC_HourFormat_24;
+    RTC_Init(&RTC_InitStructure);
+
+    RTC_TimeStructure.RTC_H12 = RTC_H12_AM;
+    RTC_TimeStructure.RTC_Hours = ((dateTimeString[j] - '0') << 4) | (dateTimeString[j + 1] - '0');
+    RTC_TimeStructure.RTC_Minutes = ((dateTimeString[j + 3] - '0') << 4) | (dateTimeString[j + 4] - '0');
+    RTC_TimeStructure.RTC_Seconds = ((dateTimeString[j + 6] - '0') << 4) | (dateTimeString[j + 7] - '0');
+    RTC_DateStructure.RTC_Date = ((dateTimeString[8] - '0') << 4) | (dateTimeString[9] - '0');
+    RTC_DateStructure.RTC_Month = ((dateTimeString[5] - '0') << 4) | (dateTimeString[6] - '0');
+    RTC_DateStructure.RTC_WeekDay = weekdayTable[(uint8_t)(c1 * c2) >> 4];
+    RTC_DateStructure.RTC_Year = ((dateTimeString[2] - '0') << 4) | (dateTimeString[3] - '0');
+    RTC_SetTime(RTC_Format_BCD, &RTC_TimeStructure);
+    RTC_SetDate(RTC_Format_BCD, &RTC_DateStructure);
+
+    RTC_WriteBackupRegister(RTC_BKP_DR0, 0x1234);
+  }
+}
+
+/**
+ * @brief  Get date and time from RTC.
+ * @param  dateTime Pointer to a structure where the date and time from RTC is stored.
+ */
+void UTILS_GetDateTime(UTILS_DateTimeTypeDef* dateTime)
+{
+  uint32_t tmpreg = (uint32_t)(RTC->TR & 0x007F7F7F); 
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
+  PWR_BackupAccessCmd(ENABLE);
+  
+  dateTime->Hours = UTILS_Bcd2ToByte((uint8_t)((tmpreg & (RTC_TR_HT | RTC_TR_HU)) >> 16));
+  dateTime->Minutes = UTILS_Bcd2ToByte((uint8_t)((tmpreg & (RTC_TR_MNT | RTC_TR_MNU)) >>8));
+  dateTime->Seconds = UTILS_Bcd2ToByte((uint8_t)(tmpreg & (RTC_TR_ST | RTC_TR_SU)));
+  
+  tmpreg = (uint32_t)(RTC->DR & 0x00FFFF3F); 
+  dateTime->Year = RTC_ReadBackupRegister(RTC_BKP_DR1) + (uint16_t)UTILS_Bcd2ToByte((uint8_t)((tmpreg & (RTC_DR_YT | RTC_DR_YU)) >> 16));
+  dateTime->Month = UTILS_Bcd2ToByte((uint8_t)((tmpreg & (RTC_DR_MT | RTC_DR_MU)) >> 8));
+  dateTime->Date = UTILS_Bcd2ToByte((uint8_t)(tmpreg & (RTC_DR_DT | RTC_DR_DU)));
+  dateTime->WeekDay = UTILS_Bcd2ToByte((uint8_t)((tmpreg & (RTC_DR_WDU)) >> 13));  
+}
+
+/**
+ * @brief  Get the formatted string of date and time in RTC.
+ *         The string looks like "yyyy-MM-dd ddd HH:mm:ss" or "yyyy-MM-dd HH:mm:ss"
+ * @param  dateTimeString Pointer to a buffer where the resulting string is stored.
+ *                        The buffer should be large enough to contain the resulting string.
+ * @return On success, the total number of characters written is returned. 
+ *         On failure, a negative number is returned.
+ */
+int32_t UTILS_GetDateTimeString(char* dateTimeString)
+{
+  static char* weekdayStrings[8] = {"", "Mon ", "Tue ", "Wed ", "Thur ", "Fri ", "Sat ", "Sun "};
+  uint32_t tmpdr = (uint32_t)(RTC->DR & 0x00FFFF3F); 
+  uint32_t tmptr = (uint32_t)(RTC->TR & 0x007F7F7F);
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
+  PWR_BackupAccessCmd(ENABLE);
+  
+  return sprintf(dateTimeString, "%4d-%02x-%02x %s%02x:%02x:%02x",
+    RTC_ReadBackupRegister(RTC_BKP_DR1) + (uint32_t)UTILS_Bcd2ToByte((uint8_t)((tmpdr & (RTC_DR_YT | RTC_DR_YU)) >> 16)),
+    (tmpdr & (RTC_DR_MT | RTC_DR_MU)) >> 8,
+    tmpdr & (RTC_DR_DT | RTC_DR_DU),
+    weekdayStrings[(tmpdr & (RTC_DR_WDU)) >> 13],
+    (tmptr & (RTC_TR_HT | RTC_TR_HU)) >> 16,
+    (tmptr & (RTC_TR_MNT | RTC_TR_MNU)) >>8,
+    tmptr & (RTC_TR_ST | RTC_TR_SU));
 }
 /**
  * @}

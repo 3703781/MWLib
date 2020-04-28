@@ -1,15 +1,15 @@
 /**
  * @file    utils.h
  * @author  Alientek, Miaow
- * @version 0.2.0
- * @date    2019/07/22
+ * @version 1.0.0
+ * @date    2020/04/28
  * @brief   
  *          This file provides utilities:
  *              1. Delay functions
  *              2. Serialport on UART1. Functions from stdio.h are avaliable.
  * @note
  *          Minimum version of source file:
- *              0.2.0
+ *              1.0.0
  *
  *          Pin connection of serial port:
  *            ┌─────┐
@@ -31,7 +31,22 @@
 #define __UTILS_H
 
 #include "stdio.h"
+#include "stdlib.h"
+#include "stdarg.h"
+#include "string.h"
 #include "stm32f4xx.h"
+
+
+typedef struct
+{
+  uint8_t Hours;
+  uint8_t Minutes;
+  uint8_t Seconds;
+  uint8_t WeekDay;
+  uint8_t Month;
+  uint8_t Date;
+  uint16_t Year;
+} UTILS_DateTimeTypeDef;
 
 /** 
  * @defgroup UTILS
@@ -59,8 +74,13 @@ extern uint16_t USART_RX_STA; //接收状态标记
 void UTILS_UpdateClocks(void);
 void UTILS_InitUart(uint32_t baudrate);
 void UTILS_InitDelay(void);
+void UTILS_InitDateTime(const char* dateTimeString, FunctionalState forceInitialize);
+void UTILS_GetDateTime(UTILS_DateTimeTypeDef* dateTime);
+int32_t UTILS_GetDateTimeString(char* dateTimeString);
 void UTILS_DelayUs(uint32_t time);
 void UTILS_DelayMs(uint16_t time);
+uint8_t UTILS_ByteToBcd2(uint8_t value);
+uint8_t UTILS_Bcd2ToByte(uint8_t value);
 
 /**
  * @}
