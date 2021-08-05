@@ -1,8 +1,8 @@
 /**
  * @file    servo.c
  * @author  Miaow
- * @version 0.1.0
- * @date    2019/08/05
+ * @version 1.0.0
+ * @date    2021/08/01
  * @brief   
  *          This file provides bsp functions to manage the following 
  *          functionalities of servos:
@@ -10,8 +10,8 @@
  *              2. Servo operation
  * @note
  *          Minimum version of header file:
- *              0.1.0
- *          Pin connection:           
+ *              1.0.0
+ *          Pin connection:
  *                              ©°©¤©¤©¤©¤©¤©¤©¤©¤©´
  *                              ©¦ SERVO3 ©¦
  *                              ©¸©¤©¤©¤©Ð©¤©¤©¤©¤©¼
@@ -23,7 +23,7 @@
  *                              ©°©¤©¤©¤©Ø©¤©¤©¤©¤©´
  *                              ©¦ SERVO4 ©¦
  *                              ©¸©¤©¤©¤©¤©¤©¤©¤©¤©¼
- *             
+ * 
  *          The source code repository is available on GitHub:
  *              https://github.com/3703781
  *          Your pull requests will be welcome.

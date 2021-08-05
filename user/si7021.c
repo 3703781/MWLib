@@ -252,4 +252,4 @@ uint8_t SI7021_GetHumidity(uint8_t* humidity)
 /**
  * @}
  */
- 
+

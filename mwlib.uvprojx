@@ -10,13 +10,13 @@
       <TargetName>mwlib</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>5060750::V5.06 update 6 (build 750)::ARMCC</pCCUsed>
+      <pCCUsed>5060960::V5.06 update 7 (build 960)::.\ARMCC</pCCUsed>
       <uAC6>0</uAC6>
       <TargetOption>
         <TargetCommonOption>
           <Device>STM32F407VETx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32F4xx_DFP.2.14.0</PackID>
+          <PackID>Keil.STM32F4xx_DFP.2.15.0</PackID>
           <PackURL>http://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000,0x00020000) IRAM2(0x10000000,0x00010000) IROM(0x08000000,0x00080000) CPUTYPE("Cortex-M4") FPU2 CLOCK(12000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -185,6 +185,7 @@
             <uocXRam>0</uocXRam>
             <RvdsVP>2</RvdsVP>
             <RvdsMve>0</RvdsMve>
+            <RvdsCdeCp>0</RvdsCdeCp>
             <hadIRAM2>1</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
@@ -351,7 +352,7 @@
             <NoWarn>0</NoWarn>
             <uSurpInc>0</uSurpInc>
             <useXO>0</useXO>
-            <uClangAs>0</uClangAs>
+            <ClangAsOpt>4</ClangAsOpt>
             <VariousControls>
               <MiscControls></MiscControls>
               <Define></Define>
@@ -603,9 +604,124 @@
           <GroupName>user</GroupName>
           <Files>
             <File>
+              <FileName>beep.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\beep.c</FilePath>
+            </File>
+            <File>
+              <FileName>bmp280.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\bmp280.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_iic.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\bsp_iic.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_spi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\bsp_spi.c</FilePath>
+            </File>
+            <File>
+              <FileName>dht11.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\dht11.c</FilePath>
+            </File>
+            <File>
+              <FileName>drv8825.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\drv8825.c</FilePath>
+            </File>
+            <File>
+              <FileName>e18d80nk.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\e18d80nk.c</FilePath>
+            </File>
+            <File>
+              <FileName>ec11.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\ec11.c</FilePath>
+            </File>
+            <File>
+              <FileName>gp2y0e03.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\gp2y0e03.c</FilePath>
+            </File>
+            <File>
+              <FileName>gp2y1010.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\gp2y1010.c</FilePath>
+            </File>
+            <File>
+              <FileName>hallencoder.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\hallencoder.c</FilePath>
+            </File>
+            <File>
+              <FileName>hcsr04.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\hcsr04.c</FilePath>
+            </File>
+            <File>
+              <FileName>hcsr501.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\hcsr501.c</FilePath>
+            </File>
+            <File>
+              <FileName>key.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\key.c</FilePath>
+            </File>
+            <File>
+              <FileName>led.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\led.c</FilePath>
+            </File>
+            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\user\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>mq7.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\mq7.c</FilePath>
+            </File>
+            <File>
+              <FileName>nrf24l01.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\nrf24l01.c</FilePath>
+            </File>
+            <File>
+              <FileName>pid.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\pid.c</FilePath>
+            </File>
+            <File>
+              <FileName>pms7003.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\pms7003.c</FilePath>
+            </File>
+            <File>
+              <FileName>sd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\sd.c</FilePath>
+            </File>
+            <File>
+              <FileName>serialport.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\serialport.c</FilePath>
+            </File>
+            <File>
+              <FileName>servo.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\servo.c</FilePath>
+            </File>
+            <File>
+              <FileName>si7021.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\si7021.c</FilePath>
             </File>
             <File>
               <FileName>stm32f4xx_it.c</FileName>
@@ -623,24 +739,19 @@
               <FilePath>.\user\tb6612fng.c</FilePath>
             </File>
             <File>
-              <FileName>hallencoder.c</FileName>
+              <FileName>utils.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\user\hallencoder.c</FilePath>
+              <FilePath>.\user\utils.c</FilePath>
             </File>
             <File>
-              <FileName>bsp_iic.c</FileName>
+              <FileName>xkcy25v.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\user\bsp_iic.c</FilePath>
+              <FilePath>.\user\xkcy25v.c</FilePath>
             </File>
             <File>
-              <FileName>drv8825.c</FileName>
+              <FileName>oled.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\user\drv8825.c</FilePath>
-            </File>
-            <File>
-              <FileName>mpu6050.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\user\mpu6050\mpu6050.c</FilePath>
+              <FilePath>.\user\oled\oled.c</FilePath>
             </File>
             <File>
               <FileName>inv_mpu.c</FileName>
@@ -653,89 +764,9 @@
               <FilePath>.\user\mpu6050\inv_mpu_dmp_motion_driver.c</FilePath>
             </File>
             <File>
-              <FileName>oled.c</FileName>
+              <FileName>mpu6050.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\user\oled\oled.c</FilePath>
-            </File>
-            <File>
-              <FileName>gp2y0e03.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\user\gp2y0e03.c</FilePath>
-            </File>
-            <File>
-              <FileName>e18d80nk.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\user\e18d80nk.c</FilePath>
-            </File>
-            <File>
-              <FileName>led.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\user\led.c</FilePath>
-            </File>
-            <File>
-              <FileName>key.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\user\key.c</FilePath>
-            </File>
-            <File>
-              <FileName>hcsr04.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\user\hcsr04.c</FilePath>
-            </File>
-            <File>
-              <FileName>utils.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\user\utils.c</FilePath>
-            </File>
-            <File>
-              <FileName>ec11.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\user\ec11.c</FilePath>
-            </File>
-            <File>
-              <FileName>bmp280.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\user\bmp280.c</FilePath>
-            </File>
-            <File>
-              <FileName>bsp_spi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\user\bsp_spi.c</FilePath>
-            </File>
-            <File>
-              <FileName>sd.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\user\sd.c</FilePath>
-            </File>
-            <File>
-              <FileName>nrf24l01.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\user\nrf24l01.c</FilePath>
-            </File>
-            <File>
-              <FileName>servo.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\user\servo.c</FilePath>
-            </File>
-            <File>
-              <FileName>pid.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\user\pid.c</FilePath>
-            </File>
-            <File>
-              <FileName>si7021.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\user\si7021.c</FilePath>
-            </File>
-            <File>
-              <FileName>serialport.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\user\serialport.c</FilePath>
-            </File>
-            <File>
-              <FileName>pms7003.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\user\pms7003.c</FilePath>
+              <FilePath>.\user\mpu6050\mpu6050.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -748,5 +779,14 @@
     <components/>
     <files/>
   </RTE>
+
+  <LayerInfo>
+    <Layers>
+      <Layer>
+        <LayName>mwlib</LayName>
+        <LayPrjMark>1</LayPrjMark>
+      </Layer>
+    </Layers>
+  </LayerInfo>
 
 </Project>

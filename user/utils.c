@@ -1,15 +1,16 @@
 /**
  * @file    utils.c
  * @author  Alientek, Miaow
- * @version 1.0.0
- * @date    2020/04/28
+ * @version 2.0.0
+ * @date    2021/08/01
  * @brief
  *          This file provides utilities:
  *              1. Delay functions
  *              2. Serialport on UART1. Functions from stdio.h are avaliable.
+ *              3. Real time clock functions.
  * @note
  *          Minimum version of header file:
- *              1.0.0
+ *              2.0.0
  *
  *          Pin connection of serial port:
  *            ┌─────┐
@@ -28,25 +29,21 @@
  */
 
 #include "utils.h"
+#if defined(__GNUC__)
+#include "unistd.h"
+#endif
 #include "system_stm32f4xx.h"
 
- /** @addtogroup UTILS
+/** @addtogroup UTILS
   * @{
   */
 
-uint32_t AhbClock = 0; //!< AHB clock in Hz.
+uint32_t AhbClock = 0;  //!< AHB clock in Hz.
 uint32_t Apb1Clock = 0; //!< PCLK1(APB1 clock) in Hz.
 uint32_t Apb2Clock = 0; //!< PCLK2(APB2 clock) in Hz.
 
 static float fac_us = 0;
 static float fac_ms = 0;
-
-#pragma import(__use_no_semihosting)             
-
-struct __FILE
-{
-  int handle;
-} __stdout;
 
 #if UTILS_USART_RX_ENABLE
 
@@ -62,18 +59,18 @@ uint16_t USART_RX_STA = 0;
 void USART1_IRQHandler(void)
 {
   uint8_t Res;
-  if (USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)  //接收中断(接收到的数据必须是0x0d 0x0a结尾)
+  if (USART_GetITStatus(USART1, USART_IT_RXNE) != RESET) //接收中断(接收到的数据必须是0x0d 0x0a结尾)
   {
-    Res = USART_ReceiveData(USART1);//(USART1->DR);    //读取接收到的数据
+    Res = USART_ReceiveData(USART1); //(USART1->DR);    //读取接收到的数据
 
-    if ((USART_RX_STA & 0x8000) == 0)//接收未完成
+    if ((USART_RX_STA & 0x8000) == 0) //接收未完成
     {
-      if (USART_RX_STA & 0x4000)//接收到了0x0d
+      if (USART_RX_STA & 0x4000) //接收到了0x0d
       {
         if (Res != 0x0a)
-          USART_RX_STA = 0;//接收错误,重新开始
+          USART_RX_STA = 0; //接收错误,重新开始
         else
-          USART_RX_STA |= 0x8000;    //接收完成了 
+          USART_RX_STA |= 0x8000; //接收完成了
       }
       else //还没收到0X0D
       {
@@ -86,7 +83,7 @@ void USART1_IRQHandler(void)
           USART_RX_BUF[USART_RX_STA & 0X3FFF] = Res;
           USART_RX_STA++;
           if (USART_RX_STA > (UTILS_RECEIEVE_LENTH - 1))
-            USART_RX_STA = 0;//接收数据错误,重新开始接收      
+            USART_RX_STA = 0; //接收数据错误,重新开始接收
         }
       }
     }
@@ -255,6 +252,14 @@ void UTILS_DelayMs(uint16_t time)
     UTILS_DelayXms(remain);
 }
 
+#if defined(__CC_ARM)
+#pragma import(__use_no_semihosting)
+
+struct __FILE
+{
+  int handle;
+} __stdout;
+
 void _sys_exit(int x)
 {
   x = x;
@@ -268,12 +273,39 @@ void _ttywrch(int ch)
 /**
  * @brief Override fputc in stdlib.
  */
-int fputc(int ch, FILE * f)
+int fputc(int ch, FILE *f)
 {
-  while ((USART1->SR & 0X40) == 0);
+  while ((USART1->SR & 0X40) == 0)
+    ;
   USART1->DR = (uint8_t)ch;
   return ch;
 }
+#elif defined(__GNUC__)
+#include <errno.h>
+#include <sys/unistd.h> // STDOUT_FILENO, STDERR_FILENO
+
+int _write(int file, char *data, int len)
+{
+
+  if ((file != STDOUT_FILENO) && (file != STDERR_FILENO))
+  {
+    errno = EBADF;
+    return -1;
+  }
+  int i = len;
+  // arbitrary timeout 1000
+  while (i--)
+  {
+    while ((USART1->SR & 0X40) == 0)
+      ;
+    USART1->DR = *data;
+    data++;
+  }
+
+  // return # of bytes written - as best we can tell
+  return len;
+}
+#endif
 
 /**
  * @brief Initialize UART1.
@@ -331,13 +363,13 @@ void UTILS_InitUart(uint32_t baudrate)
 uint8_t UTILS_ByteToBcd2(uint8_t value)
 {
   uint8_t bcdhigh = 0;
-  
+
   while (value >= 10)
   {
     bcdhigh++;
     value -= 10;
   }
-  return  ((uint8_t)(bcdhigh << 4) | value);
+  return ((uint8_t)(bcdhigh << 4) | value);
 }
 
 /**
@@ -352,8 +384,6 @@ uint8_t UTILS_Bcd2ToByte(uint8_t value)
   return (tmp + (value & (uint8_t)0x0F));
 }
 
-
-
 /**
  * @brief  Initializes the RTC peripheral according to the date time sting.
  * @param  dateTimeString A string in format "yyyy-MM-dd ddd HH:mm:ss" or "yyyy-MM-dd dddd HH:mm:ss".
@@ -362,28 +392,31 @@ uint8_t UTILS_Bcd2ToByte(uint8_t value)
  * @param forceInitialize ENABLE - Initialize all the way.
  *                        DISABLE - Initialize only when not initialized.
  */
-void UTILS_InitDateTime(const char* dateTimeString, FunctionalState forceInitialize)
+void UTILS_InitDateTime(const char *dateTimeString, FunctionalState forceInitialize)
 {
   uint8_t i = 0, j, c1, c2;
   uint8_t weekdayTable[16] = {2, 0, 4, 0, 1, 0, 5, 0, 7, 6, 0, 0, 0, 0, 0, 3};
-  
+
   RTC_InitTypeDef RTC_InitStructure;
   RTC_TimeTypeDef RTC_TimeStructure;
   RTC_DateTypeDef RTC_DateStructure;
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
   PWR_BackupAccessCmd(ENABLE);
   RTC_WriteBackupRegister(RTC_BKP_DR1, (uint32_t)(dateTimeString[0] - '0') * 1000 + (uint32_t)(dateTimeString[1] - '0') * 100);
-  
-  while(dateTimeString[i++] != ' ');
+
+  while (dateTimeString[i++] != ' ')
+    ;
   j = i;
-  while(dateTimeString[j++] != ' ');
+  while (dateTimeString[j++] != ' ')
+    ;
   c1 = dateTimeString[i] <= 'Z' ? dateTimeString[i] + 32 : dateTimeString[i];
   c2 = dateTimeString[i + 1] <= 'Z' ? dateTimeString[i + 1] + 32 : dateTimeString[i + 1];
-  
+
   if (forceInitialize || RTC_ReadBackupRegister(RTC_BKP_DR0) != 0x1234)
   {
     RCC_LSEConfig(RCC_LSE_ON);
-    while (RCC_GetFlagStatus(RCC_FLAG_LSERDY) == RESET);
+    while (RCC_GetFlagStatus(RCC_FLAG_LSERDY) == RESET)
+      ;
 
     RCC_RTCCLKConfig(RCC_RTCCLKSource_LSE);
     RCC_RTCCLKCmd(ENABLE);
@@ -411,21 +444,21 @@ void UTILS_InitDateTime(const char* dateTimeString, FunctionalState forceInitial
  * @brief  Get date and time from RTC.
  * @param  dateTime Pointer to a structure where the date and time from RTC is stored.
  */
-void UTILS_GetDateTime(UTILS_DateTimeTypeDef* dateTime)
+void UTILS_GetDateTime(UTILS_DateTimeTypeDef *dateTime)
 {
-  uint32_t tmpreg = (uint32_t)(RTC->TR & 0x007F7F7F); 
+  uint32_t tmpreg = (uint32_t)(RTC->TR & 0x007F7F7F);
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
   PWR_BackupAccessCmd(ENABLE);
-  
+
   dateTime->Hours = UTILS_Bcd2ToByte((uint8_t)((tmpreg & (RTC_TR_HT | RTC_TR_HU)) >> 16));
-  dateTime->Minutes = UTILS_Bcd2ToByte((uint8_t)((tmpreg & (RTC_TR_MNT | RTC_TR_MNU)) >>8));
+  dateTime->Minutes = UTILS_Bcd2ToByte((uint8_t)((tmpreg & (RTC_TR_MNT | RTC_TR_MNU)) >> 8));
   dateTime->Seconds = UTILS_Bcd2ToByte((uint8_t)(tmpreg & (RTC_TR_ST | RTC_TR_SU)));
-  
-  tmpreg = (uint32_t)(RTC->DR & 0x00FFFF3F); 
+
+  tmpreg = (uint32_t)(RTC->DR & 0x00FFFF3F);
   dateTime->Year = RTC_ReadBackupRegister(RTC_BKP_DR1) + (uint16_t)UTILS_Bcd2ToByte((uint8_t)((tmpreg & (RTC_DR_YT | RTC_DR_YU)) >> 16));
   dateTime->Month = UTILS_Bcd2ToByte((uint8_t)((tmpreg & (RTC_DR_MT | RTC_DR_MU)) >> 8));
   dateTime->Date = UTILS_Bcd2ToByte((uint8_t)(tmpreg & (RTC_DR_DT | RTC_DR_DU)));
-  dateTime->WeekDay = UTILS_Bcd2ToByte((uint8_t)((tmpreg & (RTC_DR_WDU)) >> 13));  
+  dateTime->WeekDay = UTILS_Bcd2ToByte((uint8_t)((tmpreg & (RTC_DR_WDU)) >> 13));
 }
 
 /**
@@ -436,22 +469,22 @@ void UTILS_GetDateTime(UTILS_DateTimeTypeDef* dateTime)
  * @return On success, the total number of characters written is returned. 
  *         On failure, a negative number is returned.
  */
-int32_t UTILS_GetDateTimeString(char* dateTimeString)
+int32_t UTILS_GetDateTimeString(char *dateTimeString)
 {
-  static char* weekdayStrings[8] = {"", "Mon ", "Tue ", "Wed ", "Thur ", "Fri ", "Sat ", "Sun "};
-  uint32_t tmpdr = (uint32_t)(RTC->DR & 0x00FFFF3F); 
+  static char *weekdayStrings[8] = {"", "Mon ", "Tue ", "Wed ", "Thur ", "Fri ", "Sat ", "Sun "};
+  uint32_t tmpdr = (uint32_t)(RTC->DR & 0x00FFFF3F);
   uint32_t tmptr = (uint32_t)(RTC->TR & 0x007F7F7F);
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
   PWR_BackupAccessCmd(ENABLE);
-  
-  return sprintf(dateTimeString, "%4d-%02x-%02x %s%02x:%02x:%02x",
-    RTC_ReadBackupRegister(RTC_BKP_DR1) + (uint32_t)UTILS_Bcd2ToByte((uint8_t)((tmpdr & (RTC_DR_YT | RTC_DR_YU)) >> 16)),
-    (tmpdr & (RTC_DR_MT | RTC_DR_MU)) >> 8,
-    tmpdr & (RTC_DR_DT | RTC_DR_DU),
-    weekdayStrings[(tmpdr & (RTC_DR_WDU)) >> 13],
-    (tmptr & (RTC_TR_HT | RTC_TR_HU)) >> 16,
-    (tmptr & (RTC_TR_MNT | RTC_TR_MNU)) >>8,
-    tmptr & (RTC_TR_ST | RTC_TR_SU));
+
+  return sprintf(dateTimeString, "%4ld-%02x-%02x %s%02x:%02x:%02x",
+                 RTC_ReadBackupRegister(RTC_BKP_DR1) + (uint32_t)UTILS_Bcd2ToByte((uint8_t)((tmpdr & (RTC_DR_YT | RTC_DR_YU)) >> 16)),
+                 (uint16_t)((tmpdr & (RTC_DR_MT | RTC_DR_MU)) >> 8),
+                 (uint16_t)(tmpdr & (RTC_DR_DT | RTC_DR_DU)),
+                 weekdayStrings[(tmpdr & (RTC_DR_WDU)) >> 13],
+                 (uint16_t)((tmptr & (RTC_TR_HT | RTC_TR_HU)) >> 16),
+                 (uint16_t)((tmptr & (RTC_TR_MNT | RTC_TR_MNU)) >> 8),
+                 (uint16_t)(tmptr & (RTC_TR_ST | RTC_TR_SU)));
 }
 /**
  * @}

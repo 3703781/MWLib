@@ -1,15 +1,16 @@
 /**
  * @file    utils.h
  * @author  Alientek, Miaow
- * @version 1.0.0
- * @date    2020/04/28
+ * @version 2.0.0
+ * @date    2021/08/01
  * @brief   
  *          This file provides utilities:
  *              1. Delay functions
  *              2. Serialport on UART1. Functions from stdio.h are avaliable.
+ *              3. Real time clock functions.
  * @note
  *          Minimum version of source file:
- *              1.0.0
+ *              2.0.0
  *
  *          Pin connection of serial port:
  *            ©°©¤©¤©¤©¤©¤©´

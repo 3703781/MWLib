@@ -30,6 +30,11 @@ The library covers several devices as listed:
 - [Servo](./res/servo.jpg) - Analog servo (e.g., ES08A, MG90, MG995, etc)
 - [SI7021](./res/si7021.jpg) - Humidity and temperature sensor module
 - [PMS7003](./res/pms7003.jpg) - Laser particle concentration sensor based on scattered light
+- [DHT11](./res/dht11.jpg) - Basic & ultra low-cost digital temperature and humidity sensor
+- [XKCY25V](./res/xkcy25v.jpg) - Intelligent non-contact liquid level sensor
+- [MQ7](./res/mq7.jpg) - Carbon monoxide gas sensor
+- [GP2Y1010](./res/gp2y1010.jpg) -  House dust, cigarette smoke sensor
+- [HCSR501](./res/hcsr501.jpg) - PIR motion sensor
 
 ### Prerequisites
 
@@ -100,9 +105,17 @@ Source code in the following files is released under GPLv3 license for non-comme
 ./user/si7021.h
 ./user/pms7003.c
 ./user/pms7003.h
+./user/beep.c
+./user/beep.h
+./user/hcsr501.c
+./user/hcsr501.h
+./user/mq7.c
+./user/mq7.h
+./user/xkcy25v.c
+./user/skcy25v.h
 ```
 ## Acknowledgments
 
-- [Embdefire](https://github.com/Embdefire)
+- Embdefire
 - Alientek
 - Anyone who make contributions
