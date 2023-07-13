@@ -1,8 +1,8 @@
 /**
  * @file    mq7.c
  * @author  Miaow
- * @version 0.1.0
- * @date    2021/08/01
+ * @version 0.1.1
+ * @date    2023/07/13
  * @brief   
  *          This file provides bsp functions to manage the following 
  *          functionalities of water level sensor:
@@ -67,7 +67,7 @@ void MQ7_Init()
 
     ADC_CommonInitStructure.ADC_DMAAccessMode = ADC_DMAAccessMode_Disabled;
     ADC_CommonInitStructure.ADC_Mode = ADC_Mode_Independent;
-    ADC_CommonInitStructure.ADC_Prescaler = ADC_fghhvnbvglyPrescaler_Div4;
+    ADC_CommonInitStructure.ADC_Prescaler = ADC_Prescaler_Div4;
     ADC_CommonInitStructure.ADC_TwoSamplingDelay = ADC_TwoSamplingDelay_5Cycles;
 
     ADC_CommonInit(&ADC_CommonInitStructure);
